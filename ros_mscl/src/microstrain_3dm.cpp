@@ -1,11 +1,11 @@
 /////////////////////////////////////////////////////////////////////////////////////////////////////
-// 
+//
 // Parker-Lord Inertial Device Driver Implementation File
 //
 // Copyright (c) 2017, Brian Bingham
 // Copyright (c) 2020, Parker Hannifin Corp
 // This code is licensed under MIT license (see LICENSE file for details)
-// 
+//
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
@@ -27,6 +27,8 @@
 #include "microstrain_diagnostic_updater.h"
 #include <ros/callback_queue.h>
 #include <tf2/LinearMath/Transform.h>
+
+#include <sys/stat.h>
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -69,7 +71,7 @@ Microstrain::Microstrain()
   m_publish_rtk = false;
   m_imu_linear_cov = std::vector<double>(9, 0.0);
   m_imu_angular_cov = std::vector<double>(9, 0.0);
-  m_imu_orientation_cov = std::vector<double>(9, 0.0); 
+  m_imu_orientation_cov = std::vector<double>(9, 0.0);
   m_raw_file_enable = false;
   m_raw_file_include_support_data = false;
 
@@ -117,7 +119,7 @@ void Microstrain::run()
   bool filter_enable_magnetometer_aiding;
   bool filter_enable_external_heading_aiding;
   bool filter_enable_external_gps_time_update;
-  int filter_enable_acceleration_constraint; 
+  int filter_enable_acceleration_constraint;
   int filter_enable_velocity_constraint;
   int filter_enable_angular_constraint;
   int filter_init_condition_src;
@@ -149,7 +151,7 @@ void Microstrain::run()
   int gpio4_feature;
   int gpio4_behavior;
   int gpio4_pin_mode;
-  
+
 
   // ROS setup
   ros::Time::init();
@@ -160,7 +162,7 @@ void Microstrain::run()
   std::string port;
   int baudrate;
 
-  //Raw datafile 
+  //Raw datafile
   std::string raw_file_directory;
 
   ///////////////////////////////////////////////////////////////////////////
@@ -216,7 +218,7 @@ void Microstrain::run()
 
   //RTK Dongle configuration
   private_nh.param("rtk_dongle_enable",  rtk_dongle_enable,  false);
-  
+
   //Filter
   private_nh.param("publish_filter",             m_publish_filter, false);
   private_nh.param("filter_reset_after_config",  filter_reset_after_config, true);
@@ -241,7 +243,7 @@ void Microstrain::run()
   private_nh.param("filter_velocity_zupt_topic",      m_velocity_zupt_topic, std::string("/moving_vel"));
   private_nh.param("filter_angular_zupt_topic",       m_angular_zupt_topic, std::string("/moving_ang"));
   private_nh.param("filter_external_gps_time_topic",  m_external_gps_time_topic, std::string("/external_gps_time"));
- 
+
   //Additional GQ7 Filter
   private_nh.param("filter_adaptive_level" ,                   filter_adaptive_level, 2);
   private_nh.param("filter_adaptive_time_limit_ms" ,           filter_adaptive_time_limit_ms, 15000);
@@ -258,16 +260,16 @@ void Microstrain::run()
   private_nh.param("filter_init_condition_src",                filter_init_condition_src, 0);
   private_nh.param("filter_auto_heading_alignment_selector",   filter_auto_heading_alignment_selector, 0);
   private_nh.param("filter_init_reference_frame",              filter_init_reference_frame, 2);
-  private_nh.param("filter_init_position",                     filter_init_position, default_vector);   
+  private_nh.param("filter_init_position",                     filter_init_position, default_vector);
   private_nh.param("filter_init_velocity",                     filter_init_velocity, default_vector);
   private_nh.param("filter_init_attitude",                     filter_init_attitude, default_vector);
   private_nh.param("filter_relative_position_frame",           filter_relative_position_frame, 2);
-  private_nh.param("filter_relative_position_ref",             filter_relative_position_ref, default_vector);   
-  private_nh.param("filter_speed_lever_arm",                   filter_speed_lever_arm, default_vector);   
+  private_nh.param("filter_relative_position_ref",             filter_relative_position_ref, default_vector);
+  private_nh.param("filter_speed_lever_arm",                   filter_speed_lever_arm, default_vector);
   private_nh.param("filter_enable_wheeled_vehicle_constraint", filter_enable_wheeled_vehicle_constraint, false);
   private_nh.param("filter_enable_vertical_gyro_constraint",   filter_enable_vertical_gyro_constraint, false);
   private_nh.param("filter_enable_gnss_antenna_cal",           filter_enable_gnss_antenna_cal, false);
-  private_nh.param("filter_gnss_antenna_cal_max_offset",       filter_gnss_antenna_cal_max_offset, 0.1);   
+  private_nh.param("filter_gnss_antenna_cal_max_offset",       filter_gnss_antenna_cal_max_offset, 0.1);
 
   //GPIO Configuration
   private_nh.param("gpio1_feature",   gpio1_feature,  0);
@@ -287,25 +289,39 @@ void Microstrain::run()
   private_nh.param("gpio4_pin_mode",  gpio4_pin_mode, 0);
 
   private_nh.param("gpio_config",     gpio_config, false);
-  
+
   //Raw data file save
   private_nh.param("raw_file_enable",               m_raw_file_enable, false);
   private_nh.param("raw_file_include_support_data", m_raw_file_include_support_data, false);
   private_nh.param("raw_file_directory",            raw_file_directory, std::string("."));
 
   ROS_INFO("Using MSCL Version: %s", mscl::MSCL_VERSION.str().c_str());
- 
-  
+
+
   ///////////////////////////////////////////////////////////////////////////
-  // Setup the inertial device, ROS publishers, and subscribers 
+  // Setup the inertial device, ROS publishers, and subscribers
   ///////////////////////////////////////////////////////////////////////////
-      
+
   try
   {
     //
+    //Sometimes immediately after boot it can take a few seconds for the serial device file
+    //to show up correctly in /dev.  Wait until the provided device appears before proceeeding.
+    //
+
+    ros::Rate file_check_rate(1.0);
+    struct stat buffer;
+    while (stat(port.c_str(), &buffer) != 0)
+    {
+        ROS_WARN("%s doesn't exist yet. Waiting for file to appear...", port.c_str());
+        file_check_rate.sleep();
+    }
+
+
+    //
     //Initialize the serial interface to the device and create the inertial device object
     //
-    
+
     ROS_INFO("Attempting to open serial port <%s> at <%d> \n", port.c_str(), (uint32_t)baudrate);
 
     mscl::Connection connection = mscl::Connection::Serial(realpath(port.c_str(), 0), (uint32_t)baudrate);
@@ -343,37 +359,37 @@ void Microstrain::run()
       {
         try {
           mscl::GpioConfiguration gpioConfig;
-          
+
           gpioConfig.pin = 1;
           gpioConfig.feature = static_cast<mscl::GpioConfiguration::Feature>(gpio1_feature);
           gpioConfig.behavior = gpio1_behavior;
           gpioConfig.pinMode.value(gpio1_pin_mode);
           m_inertial_device->setGpioConfig(gpioConfig);
-  
+
           ROS_INFO("Configuring GPIO1 to feature: %i, behavior: %i, pinMode: %i", gpio1_feature, gpio1_behavior, gpio1_pin_mode);
-  
+
           gpioConfig.pin = 2;
           gpioConfig.feature = static_cast<mscl::GpioConfiguration::Feature>(gpio2_feature);
           gpioConfig.behavior = gpio2_behavior;
           gpioConfig.pinMode.value(gpio4_pin_mode);
           m_inertial_device->setGpioConfig(gpioConfig);
-  
+
           ROS_INFO("Configuring GPIO2 to feature: %i, behavior: %i, pinMode: %i", gpio2_feature, gpio2_behavior, gpio2_pin_mode);
-  
+
           gpioConfig.pin = 3;
           gpioConfig.feature = static_cast<mscl::GpioConfiguration::Feature>(gpio3_feature);
           gpioConfig.behavior = gpio3_behavior;
           gpioConfig.pinMode.value(gpio4_pin_mode);
           m_inertial_device->setGpioConfig(gpioConfig);
-  
+
           ROS_INFO("Configuring GPIO3 to feature: %i, behavior: %i, pinMode: %i", gpio3_feature, gpio3_behavior, gpio3_pin_mode);
-  
+
           gpioConfig.pin = 4;
           gpioConfig.feature = static_cast<mscl::GpioConfiguration::Feature>(gpio4_feature);
           gpioConfig.behavior = gpio4_behavior;
           gpioConfig.pinMode.value(gpio4_pin_mode);
           m_inertial_device->setGpioConfig(gpioConfig);
-  
+
           ROS_INFO("Configuring GPIO4 to feature: %i, behavior: %i, pinMode: %i", gpio4_feature, gpio4_behavior, gpio4_pin_mode);
         }
 
@@ -386,7 +402,7 @@ void Microstrain::run()
       //
       //IMU Setup
       //
-      
+
       if(m_publish_imu && supports_imu)
       {
         mscl::SampleRate imu_rate = mscl::SampleRate::Hertz(m_imu_data_rate);
@@ -429,7 +445,7 @@ void Microstrain::run()
       //
       //GNSS1 setup
       //
-      
+
       if(m_publish_gnss[GNSS1_ID] && supports_gnss1)
       {
         mscl::SampleRate gnss1_rate = mscl::SampleRate::Hertz(m_gnss_data_rate[GNSS1_ID]);
@@ -442,11 +458,11 @@ void Microstrain::run()
             mscl::MipTypes::ChannelField::CH_FIELD_GNSS_GPS_TIME};
 
         mscl::MipTypes::DataClass gnss1_data_class = mscl::MipTypes::DataClass::CLASS_GNSS;
-   
+
         if(m_inertial_device->features().supportsCategory(mscl::MipTypes::DataClass::CLASS_GNSS1))
         {
           gnss1_data_class = mscl::MipTypes::DataClass::CLASS_GNSS1;
-          
+
           gnssChannels.clear();
           gnssChannels.push_back(mscl::MipTypes::ChannelField::CH_FIELD_GNSS_1_LLH_POSITION);
           gnssChannels.push_back(mscl::MipTypes::ChannelField::CH_FIELD_GNSS_1_NED_VELOCITY);
@@ -480,17 +496,17 @@ void Microstrain::run()
         }
         else
         {
-          ROS_ERROR("Could not set GNSS1 antenna offset!");         
-        }        
+          ROS_ERROR("Could not set GNSS1 antenna offset!");
+        }
 
         m_inertial_device->enableDataStream(gnss1_data_class);
       }
 
-      
+
       //
       //GNSS2 setup
       //
-      
+
       if(m_publish_gnss[GNSS2_ID] && supports_gnss2)
       {
         mscl::SampleRate gnss2_rate = mscl::SampleRate::Hertz(m_gnss_data_rate[GNSS2_ID]);
@@ -501,7 +517,7 @@ void Microstrain::run()
             mscl::MipTypes::ChannelField::CH_FIELD_GNSS_2_LLH_POSITION,
             mscl::MipTypes::ChannelField::CH_FIELD_GNSS_2_NED_VELOCITY,
             mscl::MipTypes::ChannelField::CH_FIELD_GNSS_2_GPS_TIME};
-        
+
         mscl::MipChannels supportedChannels;
         for (mscl::MipTypes::ChannelField channel : m_inertial_device->features().supportedChannelFields(mscl::MipTypes::DataClass::CLASS_GNSS2))
         {
@@ -514,7 +530,7 @@ void Microstrain::run()
         //set the GNSS channel fields
         m_inertial_device->setActiveChannelFields(mscl::MipTypes::DataClass::CLASS_GNSS2, supportedChannels);
 
-        //Set the antenna offset 
+        //Set the antenna offset
         mscl::PositionOffset antenna_offset(m_gnss_antenna_offset[GNSS2_ID][0], m_gnss_antenna_offset[GNSS2_ID][1], m_gnss_antenna_offset[GNSS2_ID][2]);
 
         if(m_inertial_device->features().supportsCommand(mscl::MipTypes::Command::CMD_EF_MULTI_ANTENNA_OFFSET))
@@ -524,7 +540,7 @@ void Microstrain::run()
         }
         else
         {
-          ROS_ERROR("Could not set GNSS2 antenna offset!");         
+          ROS_ERROR("Could not set GNSS2 antenna offset!");
         }
 
         m_inertial_device->enableDataStream(mscl::MipTypes::DataClass::CLASS_GNSS2);
@@ -533,7 +549,7 @@ void Microstrain::run()
       //
       // RTK Dongle
       //
-      
+
       if(rtk_dongle_enable && supports_rtk)
       {
 
@@ -561,14 +577,14 @@ void Microstrain::run()
         {
           ROS_INFO("Setting RTK dongle enable to %d", rtk_dongle_enable);
           m_inertial_device->enableRtk(rtk_dongle_enable);
-  
+
           m_publish_rtk = rtk_dongle_enable;
         }
         else
         {
-          ROS_INFO("Note: Device does not support the RTK dongle config command");          
+          ROS_INFO("Note: Device does not support the RTK dongle config command");
         }
-        
+
 
         m_inertial_device->enableDataStream(mscl::MipTypes::DataClass::CLASS_GNSS3);
       }
@@ -604,7 +620,7 @@ void Microstrain::run()
               navChannels.push_back(mscl::MipTypes::ChannelField::CH_FIELD_ESTFILTER_POSITION_AIDING_STATUS);
             if(filter_enable_gnss_heading_aiding)
               navChannels.push_back(mscl::MipTypes::ChannelField::CH_FIELD_ESTFILTER_GNSS_DUAL_ANTENNA_STATUS);
-        
+
         mscl::MipChannels supportedChannels;
         for(mscl::MipTypes::ChannelField channel : m_inertial_device->features().supportedChannelFields(mscl::MipTypes::DataClass::CLASS_ESTFILTER))
         {
@@ -628,9 +644,9 @@ void Microstrain::run()
         }
         else
         {
-          ROS_INFO("Note: The device does not support the vehicle dynamics mode command.");          
+          ROS_INFO("Note: The device does not support the vehicle dynamics mode command.");
         }
-        
+
 
         //Set PPS source
         if(m_inertial_device->features().supportsCommand(mscl::MipTypes::Command::CMD_PPS_SOURCE))
@@ -644,9 +660,9 @@ void Microstrain::run()
         }
         else
         {
-          ROS_INFO("Note: The device does not support the PPS source command.");          
+          ROS_INFO("Note: The device does not support the PPS source command.");
         }
- 
+
         //Set heading Source
         if(m_inertial_device->features().supportsCommand(mscl::MipTypes::Command::CMD_EF_HEADING_UPDATE_CTRL))
         {
@@ -669,7 +685,7 @@ void Microstrain::run()
         }
         else
         {
-          ROS_INFO("Note: The device does not support the heading source command.");          
+          ROS_INFO("Note: The device does not support the heading source command.");
         }
 
 
@@ -681,9 +697,9 @@ void Microstrain::run()
         }
         else
         {
-          ROS_INFO("Note: The device does not support the filter autoinitialization command.");          
+          ROS_INFO("Note: The device does not support the filter autoinitialization command.");
         }
- 
+
 
         //(GQ7 and GX5-45 only) Set the filter adaptive settings
         if(m_inertial_device->features().supportsCommand(mscl::MipTypes::Command::CMD_EF_ADAPTIVE_FILTER_OPTIONS))
@@ -695,14 +711,14 @@ void Microstrain::run()
         }
         else
         {
-          ROS_INFO("Note: The device does not support the filte adaptive settings command.");          
+          ROS_INFO("Note: The device does not support the filte adaptive settings command.");
         }
- 
+
 
         //(GQ7 only) Set the filter aiding settings
         if(m_inertial_device->features().supportsCommand(mscl::MipTypes::Command::CMD_EF_AIDING_MEASUREMENT_ENABLE))
         {
-          ROS_INFO("Filter aiding set to: pos/vel = %d, gnss heading = %d, altimeter = %d, odometer = %d, magnetometer = %d, external heading = %d", 
+          ROS_INFO("Filter aiding set to: pos/vel = %d, gnss heading = %d, altimeter = %d, odometer = %d, magnetometer = %d, external heading = %d",
                     filter_enable_gnss_heading_aiding, filter_enable_gnss_heading_aiding, filter_enable_altimeter_aiding, filter_enable_odometer_aiding,
                     filter_enable_magnetometer_aiding, filter_enable_external_heading_aiding);
 
@@ -715,24 +731,24 @@ void Microstrain::run()
         }
         else
         {
-          ROS_INFO("Note: The device does not support the filter aiding command.");          
+          ROS_INFO("Note: The device does not support the filter aiding command.");
         }
- 
-      
+
+
         //(GQ7 only) Set the filter relative position frame settings
         if(m_publish_filter_relative_pos && m_inertial_device->features().supportsCommand(mscl::MipTypes::Command::CMD_EF_RELATIVE_POSITION_REF))
         {
           mscl::PositionReferenceConfiguration ref;
           ref.position = mscl::Position(filter_relative_position_ref[0], filter_relative_position_ref[1], filter_relative_position_ref[2], static_cast<mscl::PositionVelocityReferenceFrame>(filter_relative_position_frame));
- 
+
           ROS_INFO("Setting reference position to: [%f, %f, %f], ref frame = %d", filter_relative_position_ref[0], filter_relative_position_ref[1], filter_relative_position_ref[2], filter_relative_position_frame);
           m_inertial_device->setRelativePositionReference(ref);
         }
         else
         {
-          ROS_INFO("Note: The device does not support the relative position command.");          
+          ROS_INFO("Note: The device does not support the relative position command.");
         }
- 
+
 
         //(GQ7 only) Set the filter speed lever arm
         if(m_inertial_device->features().supportsCommand(mscl::MipTypes::Command::CMD_EF_SPEED_MEASUREMENT_OFFSET))
@@ -743,10 +759,10 @@ void Microstrain::run()
         }
         else
         {
-          ROS_INFO("Note: The device does not support the filter speed lever arm command.");          
+          ROS_INFO("Note: The device does not support the filter speed lever arm command.");
         }
 
-  
+
         //(GQ7 only) Set the wheeled vehicle constraint
         if(m_inertial_device->features().supportsCommand(mscl::MipTypes::Command::CMD_EF_WHEELED_VEHICLE_CONSTRAINT))
         {
@@ -755,9 +771,9 @@ void Microstrain::run()
         }
         else
         {
-          ROS_INFO("Note: The device does not support the wheeled vehicle constraint command.");          
+          ROS_INFO("Note: The device does not support the wheeled vehicle constraint command.");
         }
- 
+
 
         //(GQ7 only) Set the vertical gyro constraint
         if(m_inertial_device->features().supportsCommand(mscl::MipTypes::Command::CMD_EF_VERTICAL_GYRO_CONSTRAINT))
@@ -767,7 +783,7 @@ void Microstrain::run()
         }
         else
         {
-          ROS_INFO("Note: The device does not support the vertical gyro constraint command.");          
+          ROS_INFO("Note: The device does not support the vertical gyro constraint command.");
         }
 
 
@@ -783,42 +799,42 @@ void Microstrain::run()
         }
         else
         {
-          ROS_INFO("Note: The device does not support the GNSS antenna calibration command.");          
+          ROS_INFO("Note: The device does not support the GNSS antenna calibration command.");
         }
 
 
-        //(GQ7 only) Set the filter initialization settings 
+        //(GQ7 only) Set the filter initialization settings
         if(m_inertial_device->features().supportsCommand(mscl::MipTypes::Command::CMD_EF_INITIALIZATION_CONFIG))
         {
           mscl::FilterInitializationValues filter_config;
 
           //API Variable: autoInitialize
 		      filter_config.autoInitialize = filter_auto_init;
-  
+
           //API Variable: initialValuesSource
           filter_config.initialValuesSource = static_cast<mscl::FilterInitialValuesSource>(filter_init_condition_src);
-  
+
           //API Variable: autoHeadingAlignmentMethod
           filter_config.autoHeadingAlignmentMethod = static_cast<mscl::HeadingAlignmentMethod>(filter_auto_heading_alignment_selector);
-  
+
           //API Variable: initialAttitude
           //  Note: Only heading value will be used if initialValueSource indicates pitch/roll will be determined automatically.
           filter_config.initialAttitude = mscl::EulerAngles(filter_init_attitude[0], filter_init_attitude[1], filter_init_attitude[2]);
-  
+
           //API Variable: initialPosition
           filter_config.initialPosition = mscl::Position(filter_init_position[0], filter_init_position[1], filter_init_position[2], static_cast<mscl::PositionVelocityReferenceFrame>(filter_init_reference_frame));
-  
+
           //API Variable: initialVelocity
           filter_config.initialVelocity = mscl::GeometricVector(filter_init_velocity[0], filter_init_velocity[1], filter_init_velocity[2], static_cast<mscl::PositionVelocityReferenceFrame>(filter_init_reference_frame));
-  
+
           //API Variable: referenceFrame
-          filter_config.referenceFrame = static_cast<mscl::PositionVelocityReferenceFrame>(filter_init_reference_frame);    
+          filter_config.referenceFrame = static_cast<mscl::PositionVelocityReferenceFrame>(filter_init_reference_frame);
 
           m_inertial_device->setInitialFilterConfiguration(filter_config);
         }
         else
         {
-          ROS_INFO("Note: The device does not support the next-gen filter initialization command.");          
+          ROS_INFO("Note: The device does not support the next-gen filter initialization command.");
         }
 
 
@@ -829,8 +845,8 @@ void Microstrain::run()
       //
       //Set sensor2vehicle frame transformation
       //
-      
-      
+
+
       //Euler Angles
       if(filter_sensor2vehicle_frame_selector == 1)
       {
@@ -846,7 +862,7 @@ void Microstrain::run()
         else if(m_inertial_device->features().supportsCommand(mscl::MipTypes::Command::CMD_EF_SENS_VEHIC_FRAME_TRANSFORM_EULER))
         {
           mscl::EulerAngles angles(filter_sensor2vehicle_frame_transformation_euler[0], filter_sensor2vehicle_frame_transformation_euler[1], filter_sensor2vehicle_frame_transformation_euler[2]);
-            
+
           ROS_INFO("Setting sensor2vehicle frame transformation with euler angles [%f, %f, %f]", filter_sensor2vehicle_frame_transformation_euler[0], filter_sensor2vehicle_frame_transformation_euler[1], filter_sensor2vehicle_frame_transformation_euler[2]);
           m_inertial_device->setSensorToVehicleTransform_eulerAngles(angles);
         }
@@ -857,12 +873,12 @@ void Microstrain::run()
       }
       //Matrix
       else if(filter_sensor2vehicle_frame_selector == 2)
-      { 
+      {
         //Old style - set rotation (inverse of transformation)
         if(m_inertial_device->features().supportsCommand(mscl::MipTypes::Command::CMD_EF_SENS_VEHIC_FRAME_ROTATION_DCM))
         {
           //Transpose the matrix for "rotation"
-          mscl::Matrix_3x3 dcm(filter_sensor2vehicle_frame_transformation_matrix[0], filter_sensor2vehicle_frame_transformation_matrix[3], filter_sensor2vehicle_frame_transformation_matrix[6], 
+          mscl::Matrix_3x3 dcm(filter_sensor2vehicle_frame_transformation_matrix[0], filter_sensor2vehicle_frame_transformation_matrix[3], filter_sensor2vehicle_frame_transformation_matrix[6],
                                filter_sensor2vehicle_frame_transformation_matrix[1], filter_sensor2vehicle_frame_transformation_matrix[4], filter_sensor2vehicle_frame_transformation_matrix[7],
                                filter_sensor2vehicle_frame_transformation_matrix[2], filter_sensor2vehicle_frame_transformation_matrix[5], filter_sensor2vehicle_frame_transformation_matrix[8]);
 
@@ -871,10 +887,10 @@ void Microstrain::run()
         }
         else if(m_inertial_device->features().supportsCommand(mscl::MipTypes::Command::CMD_EF_SENS_VEHIC_FRAME_TRANSFORM_DCM))
         {
-          mscl::Matrix_3x3 dcm(filter_sensor2vehicle_frame_transformation_matrix[0], filter_sensor2vehicle_frame_transformation_matrix[1], filter_sensor2vehicle_frame_transformation_matrix[2], 
+          mscl::Matrix_3x3 dcm(filter_sensor2vehicle_frame_transformation_matrix[0], filter_sensor2vehicle_frame_transformation_matrix[1], filter_sensor2vehicle_frame_transformation_matrix[2],
                                filter_sensor2vehicle_frame_transformation_matrix[3], filter_sensor2vehicle_frame_transformation_matrix[4], filter_sensor2vehicle_frame_transformation_matrix[5],
                                filter_sensor2vehicle_frame_transformation_matrix[6], filter_sensor2vehicle_frame_transformation_matrix[7], filter_sensor2vehicle_frame_transformation_matrix[8]);
-             
+
           ROS_INFO("Setting sensor2vehicle frame transformation with a matrix");
           m_inertial_device->setSensorToVehicleTransform_matrix(dcm);
         }
@@ -882,7 +898,7 @@ void Microstrain::run()
         {
           ROS_ERROR("**Failed to set sensor2vehicle frame transformation with a matrix!");
         }
-        
+
       }
       //Quaternion
       else if(filter_sensor2vehicle_frame_selector == 3)
@@ -893,7 +909,7 @@ void Microstrain::run()
           //Invert the quaternion for "rotation" (note: device uses aerospace quaternion definition [w, -i, -j, -k])
           mscl::Quaternion quat(filter_sensor2vehicle_frame_transformation_quaternion[3], -filter_sensor2vehicle_frame_transformation_quaternion[0],
                                 -filter_sensor2vehicle_frame_transformation_quaternion[1], -filter_sensor2vehicle_frame_transformation_quaternion[2]);
-            
+
           ROS_INFO("Setting sensor2vehicle frame rotation with quaternion [%f %f %f %f]", -filter_sensor2vehicle_frame_transformation_quaternion[0], -filter_sensor2vehicle_frame_transformation_quaternion[1],
                                 -filter_sensor2vehicle_frame_transformation_quaternion[2], filter_sensor2vehicle_frame_transformation_quaternion[3]);
           m_inertial_device->setSensorToVehicleRotation_quaternion(quat);
@@ -927,9 +943,9 @@ void Microstrain::run()
 
           m_inertial_device->setFactoryStreamingChannels(mscl::InertialTypes::FACTORY_STREAMING_ADDITIVE);
         }
-        else 
+        else
         {
-          ROS_ERROR("**The device does not support the factory streaming channels setup command!");          
+          ROS_ERROR("**The device does not support the factory streaming channels setup command!");
         }
       }
 
@@ -950,7 +966,7 @@ void Microstrain::run()
       }
       else
       {
-        ROS_INFO("Note: The filter was not reset after configuration.");          
+        ROS_INFO("Note: The filter was not reset after configuration.");
       }
 
 
@@ -975,22 +991,22 @@ void Microstrain::run()
       time(&raw_time);
       curr_time = localtime(&raw_time);
       strftime(curr_time_buffer, sizeof(curr_time_buffer),"%y_%m_%d_%H_%M_%S", curr_time);
-      
+
       std::string time_string(curr_time_buffer);
-      
-      std::string filename = raw_file_directory + std::string("/") + 
-                              m_inertial_device->modelName() + std::string("_") + m_inertial_device->serialNumber() + 
+
+      std::string filename = raw_file_directory + std::string("/") +
+                              m_inertial_device->modelName() + std::string("_") + m_inertial_device->serialNumber() +
                               std::string("_") + time_string + std::string(".bin");
 
       m_raw_file.open(filename, std::ios::out | std::ios::binary | std::ios::trunc);
-    
+
       if(!m_raw_file.is_open())
       {
-        ROS_INFO("ERROR opening raw binary datafile at %s", filename.c_str()); 
+        ROS_INFO("ERROR opening raw binary datafile at %s", filename.c_str());
       }
       else
       {
-        ROS_INFO("Raw binary datafile opened at %s", filename.c_str()); 
+        ROS_INFO("Raw binary datafile opened at %s", filename.c_str());
       }
 
       m_inertial_device->connection().debugMode(true);
@@ -1038,7 +1054,7 @@ void Microstrain::run()
       ROS_INFO("Publishing Magnetometer data.");
       m_mag_pub = node.advertise<sensor_msgs::MagneticField>("mag", 100);
     }
-        
+
     //If the device has GNSS1, publish relevant topics
     if(m_publish_gnss[GNSS1_ID] && supports_gnss1)
     {
@@ -1093,14 +1109,14 @@ void Microstrain::run()
       }
 
       if(m_publish_filter_relative_pos)
-        m_filter_relative_pos_pub = node.advertise<nav_msgs::Odometry>("nav/relative_pos/odom", 100); 
+        m_filter_relative_pos_pub = node.advertise<nav_msgs::Odometry>("nav/relative_pos/odom", 100);
     }
-    
+
 
     ///////////////////////////////////////////////////////////////////////////
     // Setup Services
     ///////////////////////////////////////////////////////////////////////////
-    
+
     //IMU tare orientation service
     ros::ServiceServer set_tare_orientation_service;
     if (m_inertial_device->features().supportsCommand(mscl::MipTypes::Command::CMD_EF_TARE_ORIENT))
@@ -1116,7 +1132,7 @@ void Microstrain::run()
       set_complementary_filter_service = node.advertiseService("set_complementary_filter", &Microstrain::set_complementary_filter, this);
       get_complementary_filter_service = node.advertiseService("get_complementary_filter", &Microstrain::get_complementary_filter, this);
     }
-    
+
     //IMU sensor2vehicle frame rotation service
     ros::ServiceServer set_sensor2vehicle_rotation_service;
     ros::ServiceServer get_sensor2vehicle_rotation_service;
@@ -1167,7 +1183,7 @@ void Microstrain::run()
     {
       gyro_bias_capture_service = node.advertiseService("gyro_bias_capture", &Microstrain::gyro_bias_capture, this);
     }
-   
+
     //IMU Mag Hard iron offset service
     ros::ServiceServer set_hard_iron_values_service;
     ros::ServiceServer get_hard_iron_values_service;
@@ -1194,7 +1210,7 @@ void Microstrain::run()
       set_coning_sculling_comp_service = node.advertiseService("set_coning_sculling_comp", &Microstrain::set_coning_sculling_comp, this);
       get_coning_sculling_comp_service = node.advertiseService("get_coning_sculling_comp", &Microstrain::get_coning_sculling_comp, this);
     }
-    
+
     //Kalman filter reset
     ros::ServiceServer reset_filter;
     if (m_inertial_device->features().supportsCommand(mscl::MipTypes::Command::CMD_EF_RESET_FILTER))
@@ -1240,7 +1256,7 @@ void Microstrain::run()
     {
       commanded_vel_zupt_service = node.advertiseService("commanded_vel_zupt", &Microstrain::commanded_vel_zupt, this);
     }
-    
+
     //Kalman filter commanded angular ZUPT service
     ros::ServiceServer commanded_ang_rate_zupt_service;
     if (m_inertial_device->features().supportsCommand(mscl::MipTypes::Command::CMD_EF_CMDED_ZERO_ANG_RATE_UPDATE))
@@ -1310,7 +1326,7 @@ void Microstrain::run()
       set_mag_dip_adaptive_vals_service = node.advertiseService("set_mag_dip_adaptive_vals", &Microstrain::set_mag_dip_adaptive_vals, this);
       get_mag_dip_adaptive_vals_service = node.advertiseService("get_mag_dip_adaptive_vals", &Microstrain::get_mag_dip_adaptive_vals, this);
     }
-    
+
     //Kalman filter gravity adaptive filtering settings service
     ros::ServiceServer set_gravity_adaptive_vals_service;
     ros::ServiceServer get_gravity_adaptive_vals_service;
@@ -1319,7 +1335,7 @@ void Microstrain::run()
       set_gravity_adaptive_vals_service = node.advertiseService("set_gravity_adaptive_vals", &Microstrain::set_gravity_adaptive_vals, this);
       get_gravity_adaptive_vals_service = node.advertiseService("get_gravity_adaptive_vals", &Microstrain::get_gravity_adaptive_vals, this);
     }
-    
+
     //Kalman filter automatic angular ZUPT configuration service
     ros::ServiceServer set_zero_angle_update_threshold_service;
     ros::ServiceServer get_zero_angle_update_threshold_service;
@@ -1328,7 +1344,7 @@ void Microstrain::run()
       set_zero_angle_update_threshold_service = node.advertiseService("set_zero_angle_update_threshold", &Microstrain::set_zero_angle_update_threshold, this);
       get_zero_angle_update_threshold_service = node.advertiseService("get_zero_angle_update_threshold", &Microstrain::get_zero_angle_update_threshold, this);
     }
-    
+
     //Kalman Filter automatic ZUPT configuration service
     ros::ServiceServer set_zero_velocity_update_threshold_service;
     ros::ServiceServer get_zero_velocity_update_threshold_service;
@@ -1354,8 +1370,8 @@ void Microstrain::run()
     {
       set_dynamics_mode_service = node.advertiseService("set_dynamics_mode", &Microstrain::set_dynamics_mode, this);
       get_dynamics_mode_service = node.advertiseService("get_dynamics_mode", &Microstrain::get_dynamics_mode, this);
-    } 
- 
+    }
+
 
     //Device Settings Service
     ros::ServiceServer device_settings;
@@ -1386,7 +1402,7 @@ void Microstrain::run()
     //Main loop setup
     ///
     ///////////////////////////////////////////////////////////////////////////
-    
+
     // Determine loop rate as 2*(max update rate), but abs. max of 1kHz
     int max_rate = std::max({m_publish_imu            ? m_imu_data_rate : 1,
                              m_publish_gnss[GNSS1_ID] ? m_gnss_data_rate[GNSS1_ID] : 1,
@@ -1397,29 +1413,29 @@ void Microstrain::run()
 
     //Set the spin rate in hz
     ROS_INFO("Setting spin rate to <%d>", spin_rate);
-    ros::Rate r(spin_rate); 
+    ros::Rate r(spin_rate);
 
     ros_mscl::RosDiagnosticUpdater ros_diagnostic_updater;
-    
+
     ros::AsyncSpinner spinner(4);
     spinner.start();
-    
+
     //Clear the ZUPT listener flags
     m_vel_still = false;
     m_ang_still = false;
-    
+
     //Create a topic listener for ZUPTs
     if(m_velocity_zupt == 1 && m_inertial_device->features().supportsCommand(mscl::MipTypes::Command::CMD_EF_CMDED_ZERO_VEL_UPDATE))
     {
       m_filter_vel_state_sub = node.subscribe(m_velocity_zupt_topic.c_str(), 1000, &Microstrain::velocity_zupt_callback, this);
     }
-    
+
     //Create a topic listener for angular ZUPTs
     if(m_angular_zupt == 1 && m_inertial_device->features().supportsCommand(mscl::MipTypes::Command::CMD_EF_CMDED_ZERO_ANG_RATE_UPDATE))
     {
       m_filter_ang_state_sub = node.subscribe(m_angular_zupt_topic.c_str(), 1000, &Microstrain::ang_zupt_callback, this);
     }
-    
+
     //Create a topic listener for external GNSS updates
     if(filter_enable_external_gps_time_update && m_inertial_device->features().supportsCommand(mscl::MipTypes::Command::CMD_GPS_TIME_UPDATE))
     {
@@ -1442,7 +1458,7 @@ void Microstrain::run()
       {
         parse_mip_packet(packet);
       }
-      
+
       //Only get the status packet at 1 Hz
       if(status_counter++ >= spin_rate/2)
       {
@@ -1464,14 +1480,14 @@ void Microstrain::run()
       }
 
       //Take care of service requests
-      ros::spinOnce(); 
+      ros::spinOnce();
 
       //Be nice
       r.sleep();
-    }  
-    
+    }
+
   }
-  
+
   catch(mscl::Error_Connection)
   {
     ROS_ERROR("Device Disconnected");
@@ -1494,7 +1510,7 @@ void Microstrain::run()
   {
     m_raw_file.close();
   }
-} 
+}
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1545,12 +1561,12 @@ void Microstrain::parse_imu_packet(const mscl::MipDataPacket &packet)
 {
   //Update the diagnostics
   m_imu_valid_packet_count++;
-  
+
   //Handle time
   uint64_t time = packet.collectedTimestamp().nanoseconds();
-  
+
   //Check if the user wants to use the device timestamp instead of PC collected time
-  if(packet.hasDeviceTime() && m_use_device_timestamp) 
+  if(packet.hasDeviceTime() && m_use_device_timestamp)
   {
      time = packet.deviceTimestamp().nanoseconds();
   }
@@ -1660,7 +1676,7 @@ void Microstrain::parse_imu_packet(const mscl::MipDataPacket &packet)
         }
         else
         {
-  
+
           m_imu_msg.orientation.x = quaternion.as_floatAt(1);
           m_imu_msg.orientation.y = quaternion.as_floatAt(2);
           m_imu_msg.orientation.z = quaternion.as_floatAt(3);
@@ -1709,7 +1725,7 @@ void Microstrain::parse_imu_packet(const mscl::MipDataPacket &packet)
   if(m_publish_imu)
   {
     m_imu_pub.publish(m_imu_msg);
-  
+
     if(has_mag)
       m_mag_pub.publish(m_mag_msg);
   }
@@ -1731,9 +1747,9 @@ void Microstrain::parse_filter_packet(const mscl::MipDataPacket &packet)
 
   //Handle time
   uint64_t time = packet.collectedTimestamp().nanoseconds();
-  
+
   //Check if the user wants to use the device timestamp instead of PC collected time
-  if(packet.hasDeviceTime() && m_use_device_timestamp) 
+  if(packet.hasDeviceTime() && m_use_device_timestamp)
   {
      time = packet.deviceTimestamp().nanoseconds();
   }
@@ -1742,7 +1758,7 @@ void Microstrain::parse_filter_packet(const mscl::MipDataPacket &packet)
   m_filtered_imu_msg.header.seq      = m_filter_valid_packet_count;
   m_filtered_imu_msg.header.stamp    = ros::Time().fromNSec(time);
   m_filtered_imu_msg.header.frame_id = m_filter_frame_id;
-  
+
   //Nav odom timestamp and frame
   m_filter_msg.header.seq      = m_filter_valid_packet_count;
   m_filter_msg.header.stamp    = ros::Time().fromNSec(time);
@@ -1756,7 +1772,7 @@ void Microstrain::parse_filter_packet(const mscl::MipDataPacket &packet)
 
   //Get the list of data elements
   const mscl::MipDataPoints &points = packet.data();
- 
+
   //Loop over data elements and map them
   for(mscl::MipDataPoint point : points)
   {
@@ -1764,10 +1780,10 @@ void Microstrain::parse_filter_packet(const mscl::MipDataPacket &packet)
     {
     case mscl::MipTypes::CH_FIELD_ESTFILTER_FILTER_STATUS:
     {
-      if(point.qualifier() == mscl::MipTypes::CH_FILTER_STATE) 
+      if(point.qualifier() == mscl::MipTypes::CH_FILTER_STATE)
       {
         m_filter_status_msg.filter_state = point.as_uint16();
-      } 
+      }
       else if(point.qualifier() == mscl::MipTypes::CH_DYNAMICS_MODE)
       {
         m_filter_status_msg.dynamics_mode = point.as_uint16();
@@ -1776,8 +1792,8 @@ void Microstrain::parse_filter_packet(const mscl::MipDataPacket &packet)
       {
         m_filter_status_msg.status_flags = point.as_uint16();
       }
-    }break;  
-        
+    }break;
+
     //Estimated LLH Position
     case mscl::MipTypes::CH_FIELD_ESTFILTER_ESTIMATED_LLH_POS:
     {
@@ -1793,9 +1809,9 @@ void Microstrain::parse_filter_packet(const mscl::MipDataPacket &packet)
         }
         else
         {
-          m_filter_msg.pose.pose.position.x = m_curr_filter_pos_lat;          
+          m_filter_msg.pose.pose.position.x = m_curr_filter_pos_lat;
         }
-        
+
       }
       else if(point.qualifier() == mscl::MipTypes::CH_LONGITUDE)
       {
@@ -1806,7 +1822,7 @@ void Microstrain::parse_filter_packet(const mscl::MipDataPacket &packet)
           m_filter_msg.pose.pose.position.x = m_curr_filter_pos_long;
         }
         else
-        {          
+        {
           m_filter_msg.pose.pose.position.y = m_curr_filter_pos_long;
         }
       }
@@ -1818,7 +1834,7 @@ void Microstrain::parse_filter_packet(const mscl::MipDataPacket &packet)
     }break;
 
     //Estimated NED Velocity
-    case mscl::MipTypes::CH_FIELD_ESTFILTER_ESTIMATED_NED_VELOCITY: 
+    case mscl::MipTypes::CH_FIELD_ESTFILTER_ESTIMATED_NED_VELOCITY:
     {
       if(point.qualifier() == mscl::MipTypes::CH_NORTH)
       {
@@ -1827,13 +1843,13 @@ void Microstrain::parse_filter_packet(const mscl::MipDataPacket &packet)
         if(m_use_enu_frame)
         {
           m_filter_msg.twist.twist.linear.y              = m_curr_filter_vel_north;
-          m_filter_relative_pos_msg.twist.twist.linear.y = m_curr_filter_vel_north;          
+          m_filter_relative_pos_msg.twist.twist.linear.y = m_curr_filter_vel_north;
         }
         else
         {
           m_filter_msg.twist.twist.linear.x              = m_curr_filter_vel_north;
-          m_filter_relative_pos_msg.twist.twist.linear.x = m_curr_filter_vel_north;          
-        }        
+          m_filter_relative_pos_msg.twist.twist.linear.x = m_curr_filter_vel_north;
+        }
       }
       else if(point.qualifier() == mscl::MipTypes::CH_EAST)
       {
@@ -1898,10 +1914,10 @@ void Microstrain::parse_filter_packet(const mscl::MipDataPacket &packet)
     }break;
 
     case mscl::MipTypes::CH_FIELD_ESTFILTER_ESTIMATED_ORIENT_QUATERNION:
-    { 
+    {
       mscl::Vector quaternion  = point.as_Vector();
       m_curr_filter_quaternion = quaternion;
-      
+
       if(m_use_enu_frame)
       {
         tf2::Quaternion q_ned2enu, qbody2ned(quaternion.as_floatAt(1), quaternion.as_floatAt(2), quaternion.as_floatAt(3), quaternion.as_floatAt(0));
@@ -1913,9 +1929,9 @@ void Microstrain::parse_filter_packet(const mscl::MipDataPacket &packet)
         m_filter_msg.pose.pose.orientation.x  = quaternion.as_floatAt(1);
         m_filter_msg.pose.pose.orientation.y  = quaternion.as_floatAt(2);
         m_filter_msg.pose.pose.orientation.z  = quaternion.as_floatAt(3);
-        m_filter_msg.pose.pose.orientation.w  = quaternion.as_floatAt(0); 
+        m_filter_msg.pose.pose.orientation.w  = quaternion.as_floatAt(0);
       }
-      
+
       m_filtered_imu_msg.orientation                  = m_filter_msg.pose.pose.orientation;
       m_filter_relative_pos_msg.pose.pose.orientation = m_filter_msg.pose.pose.orientation;
     }break;
@@ -1944,7 +1960,7 @@ void Microstrain::parse_filter_packet(const mscl::MipDataPacket &packet)
         m_filter_relative_pos_msg.twist.twist.angular.z = m_curr_filter_angular_rate_z;
       }
     }break;
-    
+
     case mscl::MipTypes::CH_FIELD_ESTFILTER_COMPENSATED_ACCEL:
     {
       if (point.qualifier() == mscl::MipTypes::CH_X)
@@ -2016,9 +2032,9 @@ void Microstrain::parse_filter_packet(const mscl::MipDataPacket &packet)
         else
         {
           m_filter_msg.twist.covariance[7]              = pow(m_curr_filter_vel_uncert_north, 2);
-          m_filter_relative_pos_msg.twist.covariance[7] = m_filter_msg.twist.covariance[7];          
+          m_filter_relative_pos_msg.twist.covariance[7] = m_filter_msg.twist.covariance[7];
         }
-        
+
       }
       else if(point.qualifier() == mscl::MipTypes::CH_EAST)
       {
@@ -2032,9 +2048,9 @@ void Microstrain::parse_filter_packet(const mscl::MipDataPacket &packet)
         else
         {
           m_filter_msg.twist.covariance[0]              = pow(m_curr_filter_vel_uncert_east, 2);
-          m_filter_relative_pos_msg.twist.covariance[0] = m_filter_msg.twist.covariance[0];         
+          m_filter_relative_pos_msg.twist.covariance[0] = m_filter_msg.twist.covariance[0];
         }
-        
+
       }
       else if(point.qualifier() == mscl::MipTypes::CH_DOWN)
       {
@@ -2071,12 +2087,12 @@ void Microstrain::parse_filter_packet(const mscl::MipDataPacket &packet)
     }break;
 
 
-    case mscl::MipTypes::CH_FIELD_ESTFILTER_HEADING_UPDATE_SOURCE: 
+    case mscl::MipTypes::CH_FIELD_ESTFILTER_HEADING_UPDATE_SOURCE:
     {
-      if(point.qualifier() == mscl::MipTypes::CH_HEADING) 
+      if(point.qualifier() == mscl::MipTypes::CH_HEADING)
       {
         m_filter_heading_state_msg.heading_rad = point.as_float();
-      } 
+      }
       else if(point.qualifier() == mscl::MipTypes::CH_HEADING_UNCERTAINTY)
       {
         m_filter_heading_state_msg.heading_uncertainty = point.as_float();
@@ -2089,9 +2105,9 @@ void Microstrain::parse_filter_packet(const mscl::MipDataPacket &packet)
       {
         m_filter_heading_state_msg.status_flags = point.as_uint16();
       }
-    }break;  
+    }break;
 
-    case mscl::MipTypes::CH_FIELD_ESTFILTER_NED_RELATIVE_POS: 
+    case mscl::MipTypes::CH_FIELD_ESTFILTER_NED_RELATIVE_POS:
     {
       if(point.qualifier() == mscl::MipTypes::CH_X)
       {
@@ -2131,14 +2147,14 @@ void Microstrain::parse_filter_packet(const mscl::MipDataPacket &packet)
         if(gnss_id < 0 || gnss_id >= NUM_GNSS)
         {}
         else if(point.qualifier() == mscl::MipTypes::CH_TIME_OF_WEEK)
-        {        
+        {
           m_gnss_aiding_status_msg[gnss_id].gps_tow = point.as_double();
           gnss_aiding_status_received[gnss_id] = true;
         }
         else if(point.qualifier() == mscl::MipTypes::CH_STATUS)
         {
-          uint16_t status_flags = point.as_uint16(); 
-           
+          uint16_t status_flags = point.as_uint16();
+
           m_gnss_aiding_status_msg[gnss_id].has_position_fix         = (status_flags & mscl::InertialTypes::GnssAidingStatus::GNSS_AIDING_NO_FIX) == 0;
           m_gnss_aiding_status_msg[gnss_id].tight_coupling           = status_flags & mscl::InertialTypes::GnssAidingStatus::GNSS_AIDING_TIGHT_COUPLING;
           m_gnss_aiding_status_msg[gnss_id].differential_corrections = status_flags & mscl::InertialTypes::GnssAidingStatus::GNSS_AIDING_DIFFERENTIAL;
@@ -2146,7 +2162,7 @@ void Microstrain::parse_filter_packet(const mscl::MipDataPacket &packet)
           m_gnss_aiding_status_msg[gnss_id].using_gps                = status_flags & mscl::InertialTypes::GnssAidingStatus::GNSS_AIDING_GPS;
           m_gnss_aiding_status_msg[gnss_id].using_glonass            = status_flags & mscl::InertialTypes::GnssAidingStatus::GNSS_AIDING_GLONASS;
           m_gnss_aiding_status_msg[gnss_id].using_galileo            = status_flags & mscl::InertialTypes::GnssAidingStatus::GNSS_AIDING_GALILEO;
-          m_gnss_aiding_status_msg[gnss_id].using_beidou             = status_flags & mscl::InertialTypes::GnssAidingStatus::GNSS_AIDING_BEIDOU;        
+          m_gnss_aiding_status_msg[gnss_id].using_beidou             = status_flags & mscl::InertialTypes::GnssAidingStatus::GNSS_AIDING_BEIDOU;
         }
         else
         {
@@ -2183,7 +2199,7 @@ void Microstrain::parse_filter_packet(const mscl::MipDataPacket &packet)
         m_gnss_dual_antenna_status_msg.antenna_offsets_valid = status_flags & mscl::InertialTypes::DualAntennaStatusFlags::ANTENNA_OFFSETS_VALID;
       }
     }break;
-    
+
     default: break;
     }
   }
@@ -2204,14 +2220,14 @@ void Microstrain::parse_filter_packet(const mscl::MipDataPacket &packet)
     if(m_publish_gnss_dual_antenna_status && gnss_dual_antenna_status_received)
       m_gnss_dual_antenna_status_pub.publish(m_gnss_dual_antenna_status_msg);
   }
-  
+
   if(m_publish_filter_relative_pos)
-    m_filter_relative_pos_pub.publish(m_filter_relative_pos_msg); 
+    m_filter_relative_pos_pub.publish(m_filter_relative_pos_msg);
 
   for(i=0; i<NUM_GNSS; i++)
   {
     if(m_publish_gnss_aiding_status[i] && gnss_aiding_status_received[i])
-      m_gnss_aiding_status_pub[i].publish(m_gnss_aiding_status_msg[i]); 
+      m_gnss_aiding_status_pub[i].publish(m_gnss_aiding_status_msg[i]);
   }
 }
 
@@ -2228,13 +2244,13 @@ void Microstrain::parse_gnss_packet(const mscl::MipDataPacket &packet, int gnss_
 
   //Update diagnostics
   m_gnss_valid_packet_count[gnss_id]++;
-  
+
   //Handle time
   uint64_t time       = packet.collectedTimestamp().nanoseconds();
   bool     time_valid = false;
 
   //Check if the user wants to use the device timestamp instead of PC collected time
-  if(packet.hasDeviceTime() && m_use_device_timestamp) 
+  if(packet.hasDeviceTime() && m_use_device_timestamp)
   {
      time       = packet.deviceTimestamp().nanoseconds();
      time_valid = true;
@@ -2244,7 +2260,7 @@ void Microstrain::parse_gnss_packet(const mscl::MipDataPacket &packet, int gnss_
   m_gnss_msg[gnss_id].header.seq      = m_gnss_valid_packet_count[gnss_id];
   m_gnss_msg[gnss_id].header.stamp    = ros::Time().fromNSec(time);
   m_gnss_msg[gnss_id].header.frame_id = m_gnss_frame_id[gnss_id];
-  
+
   //GPS Odom time
   m_gnss_odom_msg[gnss_id].header.seq      = m_gnss_valid_packet_count[gnss_id];
   m_gnss_odom_msg[gnss_id].header.stamp    = ros::Time().fromNSec(time);
@@ -2278,7 +2294,7 @@ void Microstrain::parse_gnss_packet(const mscl::MipDataPacket &packet, int gnss_
           m_gnss_odom_msg[gnss_id].pose.pose.position.y = m_gnss_msg[gnss_id].latitude;
         else
           m_gnss_odom_msg[gnss_id].pose.pose.position.x = m_gnss_msg[gnss_id].latitude;
-          
+
       }
       else if(point.qualifier() == mscl::MipTypes::CH_LONGITUDE)
       {
@@ -2311,7 +2327,7 @@ void Microstrain::parse_gnss_packet(const mscl::MipDataPacket &packet, int gnss_
       m_gnss_msg[gnss_id].status.service           = 1;
       m_gnss_msg[gnss_id].position_covariance_type = 2;
     }break;
-    
+
     case mscl::MipTypes::ChannelField::CH_FIELD_GNSS_NED_VELOCITY:
     case mscl::MipTypes::ChannelField::CH_FIELD_GNSS_1_NED_VELOCITY:
     case mscl::MipTypes::ChannelField::CH_FIELD_GNSS_2_NED_VELOCITY:
@@ -2328,7 +2344,7 @@ void Microstrain::parse_gnss_packet(const mscl::MipDataPacket &packet, int gnss_
       else if(point.qualifier() == mscl::MipTypes::CH_EAST)
       {
         float east_velocity = point.as_float();
-        
+
         if(m_use_enu_frame)
           m_gnss_odom_msg[gnss_id].twist.twist.linear.x = east_velocity;
         else
@@ -2367,12 +2383,12 @@ void Microstrain::parse_rtk_packet(const mscl::MipDataPacket& packet)
 {
   //Update diagnostics
   m_rtk_valid_packet_count++;
-  
+
   //Handle time
   uint64_t time = packet.collectedTimestamp().nanoseconds();
 
   //Check if the user wants to use the device timestamp instead of PC collected time
-  if(packet.hasDeviceTime() && m_use_device_timestamp) 
+  if(packet.hasDeviceTime() && m_use_device_timestamp)
     time = packet.deviceTimestamp().nanoseconds();
 
   //Get the list of data elements
@@ -2387,28 +2403,28 @@ void Microstrain::parse_rtk_packet(const mscl::MipDataPacket& packet)
       case mscl::MipTypes::CH_FIELD_GNSS_3_RTK_CORRECTIONS_STATUS:
       {
         if(point.qualifier() == mscl::MipTypes::CH_TIME_OF_WEEK)
-        {        
+        {
           m_rtk_msg.gps_tow = point.as_double();
         }
         else if(point.qualifier() == mscl::MipTypes::CH_WEEK_NUMBER)
-        {        
+        {
           m_rtk_msg.gps_week = point.as_uint16();
         }
         else if(point.qualifier() == mscl::MipTypes::CH_STATUS)
-        {        
+        {
           m_rtk_msg.epoch_status = point.as_uint16();
         }
         else if(point.qualifier() == mscl::MipTypes::CH_FLAGS)
-        {        
+        {
           //Decode dongle status
           mscl::RTKDeviceStatusFlags dongle_status(point.as_uint32());
 
-          m_rtk_msg.dongle_controller_state  = dongle_status.controllerState(); 
-          m_rtk_msg.dongle_platform_state 	 = dongle_status.platformState(); 
-          m_rtk_msg.dongle_controller_status = dongle_status.controllerStatusCode(); 
-          m_rtk_msg.dongle_platform_status 	 = dongle_status.platformStatusCode(); 
-          m_rtk_msg.dongle_reset_reason 	   = dongle_status.resetReason(); 
-          m_rtk_msg.dongle_signal_quality		 = dongle_status.signalQuality(); 
+          m_rtk_msg.dongle_controller_state  = dongle_status.controllerState();
+          m_rtk_msg.dongle_platform_state 	 = dongle_status.platformState();
+          m_rtk_msg.dongle_controller_status = dongle_status.controllerStatusCode();
+          m_rtk_msg.dongle_platform_status 	 = dongle_status.platformStatusCode();
+          m_rtk_msg.dongle_reset_reason 	   = dongle_status.resetReason();
+          m_rtk_msg.dongle_signal_quality		 = dongle_status.signalQuality();
         }
         else if(point.qualifier() == mscl::MipTypes::CH_GPS_CORRECTION_LATENCY)
         {
@@ -2429,7 +2445,7 @@ void Microstrain::parse_rtk_packet(const mscl::MipDataPacket& packet)
       }break;
     }
   }
- 
+
   //Publish
   if(m_publish_rtk)
     m_rtk_pub.publish(m_rtk_msg);
@@ -2437,7 +2453,7 @@ void Microstrain::parse_rtk_packet(const mscl::MipDataPacket& packet)
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
-// Get Device Report 
+// Get Device Report
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 
 bool Microstrain::device_report(std_srvs::Trigger::Request &req, std_srvs::Trigger::Response &res)
@@ -2471,11 +2487,11 @@ bool Microstrain::device_report(std_srvs::Trigger::Request &req, std_srvs::Trigg
 
 void Microstrain::velocity_zupt_callback(const std_msgs::Bool& state)
 {
-  if(m_vel_still != state.data) 
+  if(m_vel_still != state.data)
   {
     m_vel_still = state.data;
 
-    if(m_vel_still) 
+    if(m_vel_still)
     {
       vel_zupt();
       m_vel_still = false;
@@ -2490,12 +2506,12 @@ void Microstrain::velocity_zupt_callback(const std_msgs::Bool& state)
 // Note: Handles sending the ZUPT command regularly while stationary
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void Microstrain::vel_zupt() 
+void Microstrain::vel_zupt()
 {
   ros::Rate loop_rate(5);
   ros::AsyncSpinner spinner(4);
 
-  while(ros::ok() && m_vel_still) 
+  while(ros::ok() && m_vel_still)
   {
     if(m_inertial_device && m_inertial_device->features().supportsCommand(mscl::MipTypes::Command::CMD_EF_CMDED_ZERO_VEL_UPDATE))
     {
@@ -2521,11 +2537,11 @@ void Microstrain::vel_zupt()
 
 void Microstrain::ang_zupt_callback(const std_msgs::Bool& state)
 {
-  if(m_ang_still != state.data) 
+  if(m_ang_still != state.data)
   {
     m_ang_still = state.data;
 
-    if(m_ang_still) 
+    if(m_ang_still)
     {
       ang_zupt();
       m_ang_still = false;
@@ -2540,12 +2556,12 @@ void Microstrain::ang_zupt_callback(const std_msgs::Bool& state)
 // Note: Handles sending the ZUPT command regularly while not rotating
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void Microstrain::ang_zupt() 
+void Microstrain::ang_zupt()
 {
   ros::Rate loop_rate(5);
   ros::AsyncSpinner spinner(4);
 
-  while(ros::ok() && m_ang_still) 
+  while(ros::ok() && m_ang_still)
   {
     if(m_inertial_device && m_inertial_device->features().supportsCommand(mscl::MipTypes::Command::CMD_EF_CMDED_ZERO_VEL_UPDATE))
     {
@@ -2814,7 +2830,7 @@ bool Microstrain::get_gyro_bias(ros_mscl::GetGyroBias::Request &req,
 
       ROS_INFO("Gyro bias vector values are: %f %f %f",
                biasVector.x(), biasVector.y(), biasVector.z());
-               
+
       res.bias.x = biasVector.x();
       res.bias.y = biasVector.y();
       res.bias.z = biasVector.z();
@@ -3127,7 +3143,7 @@ bool Microstrain::set_heading_source(ros_mscl::SetHeadingSource::Request &req,
     try
     {
       mscl::InertialTypes::HeadingUpdateEnableOption source = static_cast<mscl::InertialTypes::HeadingUpdateEnableOption>(req.headingSource);
-      
+
       for(mscl::HeadingUpdateOptions headingSources : m_inertial_device->features().supportedHeadingUpdateOptions())
       {
         if(headingSources.AsOptionId() == source)
@@ -3323,7 +3339,7 @@ bool Microstrain::get_sensor2vehicle_offset(ros_mscl::GetSensor2VehicleOffset::R
 // Get Sensor2Vehicle Frame Transformation (Combination of Offset and Rotation) Service
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 
-bool Microstrain::get_sensor2vehicle_transformation(ros_mscl::GetSensor2VehicleTransformation::Request &req, 
+bool Microstrain::get_sensor2vehicle_transformation(ros_mscl::GetSensor2VehicleTransformation::Request &req,
                                                     ros_mscl::GetSensor2VehicleTransformation::Response &res)
 {
   res.success = false;
@@ -3339,12 +3355,12 @@ bool Microstrain::get_sensor2vehicle_transformation(ros_mscl::GetSensor2VehicleT
     const mscl::PositionOffset offset = m_inertial_device->getSensorToVehicleOffset();
     const mscl::EulerAngles rotation  = m_inertial_device->getSensorToVehicleRotation_eulerAngles();
 
-    //set offset components from the device-stored values 
+    //set offset components from the device-stored values
     res.offset.x = offset.x();
     res.offset.y = offset.y();
     res.offset.z = offset.z();
 
-    //set rotational components from the device-stored values 
+    //set rotational components from the device-stored values
     tf2::Quaternion quat;
     quat.setRPY(rotation.roll(), rotation.pitch(), rotation.yaw());
     tf2::convert(quat, res.rotation);
@@ -3478,7 +3494,7 @@ bool Microstrain::get_coning_sculling_comp(ros_mscl::GetConingScullingComp::Requ
 
       bool enabled = m_inertial_device->getConingAndScullingEnable();
       ROS_INFO("%s Coning and Sculling compensation", enabled ? "DISABLED" : "ENABLED\n");
-      
+
       res.enable  = enabled;
       res.success = true;
     }
@@ -3560,7 +3576,7 @@ bool Microstrain::get_basic_status(std_srvs::Trigger::Request &req, std_srvs::Tr
   {
     return false;
   }
-  
+
   if(m_inertial_device->features().supportsCommand(mscl::MipTypes::Command::CMD_DEVICE_STATUS))
   {
     mscl::DeviceStatusMap status;
@@ -3575,7 +3591,7 @@ bool Microstrain::get_basic_status(std_srvs::Trigger::Request &req, std_srvs::Tr
       ROS_INFO("Model Number: \t\t\t\t\t%s\n", m_inertial_device->modelNumber().c_str());
       return true;
     }
-    
+
     mscl::DeviceStatusMap::iterator it;
 
     for(it = status.begin(); it != status.end(); it++ )
@@ -3613,21 +3629,21 @@ bool Microstrain::get_diagnostic_report(std_srvs::Trigger::Request &req,
   res.success = false;
 
   if(!m_inertial_device)
-  {    
+  {
     return false;
   }
-  
+
   if(m_inertial_device->features().supportsCommand(mscl::MipTypes::Command::CMD_DEVICE_STATUS))
   {
     mscl::DeviceStatusMap status;
 
-    if(m_inertial_device->features().supportedStatusSelectors().size() > 1) 
+    if(m_inertial_device->features().supportedStatusSelectors().size() > 1)
     {
       mscl::DeviceStatusData statusData = m_inertial_device->getDiagnosticDeviceStatus();
       status = statusData.asMap();
       res.success = true;
     }
-      
+
     else if(m_inertial_device->features().supportedStatusSelectors().size() > 0)
     {
       mscl::DeviceStatusData statusData = m_inertial_device->getBasicDeviceStatus();
@@ -3639,7 +3655,7 @@ bool Microstrain::get_diagnostic_report(std_srvs::Trigger::Request &req,
       ROS_INFO("Model Number: \t\t\t\t\t%s\n", m_inertial_device->modelNumber().c_str());
       return true;
     }
-    
+
     mscl::DeviceStatusMap::iterator it;
 
     for( it = status.begin(); it != status.end(); it++ )
@@ -3928,7 +3944,7 @@ bool Microstrain::get_accel_noise(ros_mscl::GetAccelNoise::Request &req,
       mscl::GeometricVector noise = m_inertial_device->getAccelNoiseStandardDeviation();
       ROS_INFO("Returned values: %f X %f Y %f Z\n",
                noise.x(), noise.y(), noise.z());
-      
+
       res.noise.x = noise.x();
       res.noise.y = noise.y();
       res.noise.z = noise.z();
@@ -4246,7 +4262,7 @@ bool Microstrain::set_gravity_adaptive_vals(ros_mscl::SetGravityAdaptiveVals::Re
                                             ros_mscl::SetGravityAdaptiveVals::Response &res)
 {
   res.success = false;
-  
+
   if(m_inertial_device)
   {
     try
@@ -4311,7 +4327,7 @@ bool Microstrain::get_gravity_adaptive_vals(ros_mscl::GetGravityAdaptiveVals::Re
       res.low_limit         = adaptiveData.lowLimit;
       res.high_limit        = adaptiveData.highLimit;
       res.low_limit_1sigma  = adaptiveData.lowLimitUncertainty;
-      res.high_limit_1sigma = adaptiveData.highLimitUncertainty; 
+      res.high_limit_1sigma = adaptiveData.highLimitUncertainty;
       res.min_1sigma        = adaptiveData.minUncertainty;
 
       res.success = true;
@@ -4398,7 +4414,7 @@ bool Microstrain::get_mag_adaptive_vals(ros_mscl::GetMagAdaptiveVals::Request &r
       res.low_limit         = adaptiveData.lowLimit;
       res.high_limit        = adaptiveData.highLimit;
       res.low_limit_1sigma  = adaptiveData.lowLimitUncertainty;
-      res.high_limit_1sigma = adaptiveData.highLimitUncertainty; 
+      res.high_limit_1sigma = adaptiveData.highLimitUncertainty;
       res.min_1sigma        = adaptiveData.minUncertainty;
 
       res.success = true;
@@ -4441,7 +4457,7 @@ bool Microstrain::set_mag_dip_adaptive_vals(ros_mscl::SetMagDipAdaptiveVals::Req
       ROS_INFO("mag dip angle error adaptive measurement values successfully set.\n");
       ROS_INFO("Returned values: Enable: %i, Parameters: %f %f %f %f\n",
                adaptiveData.mode, adaptiveData.lowPassFilterCutoff,
-               adaptiveData.minUncertainty, adaptiveData.highLimit, 
+               adaptiveData.minUncertainty, adaptiveData.highLimit,
                adaptiveData.highLimitUncertainty);
 
       res.success = true;
@@ -4481,7 +4497,7 @@ bool Microstrain::get_mag_dip_adaptive_vals(ros_mscl::GetMagDipAdaptiveVals::Req
       res.enable            = adaptiveData.mode;
       res.low_pass_cutoff   = adaptiveData.lowPassFilterCutoff;
       res.high_limit        = adaptiveData.highLimit;
-      res.high_limit_1sigma = adaptiveData.highLimitUncertainty; 
+      res.high_limit_1sigma = adaptiveData.highLimitUncertainty;
       res.min_1sigma        = adaptiveData.minUncertainty;
 
       res.success = true;
@@ -4557,7 +4573,7 @@ bool Microstrain::get_dynamics_mode(ros_mscl::GetDynamicsMode::Request &req,
 
   return res.success;
 }
-  
+
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 // Change Device Settings
@@ -4579,7 +4595,7 @@ bool Microstrain::device_settings(ros_mscl::DeviceSettings::Request &req, ros_ms
           ROS_INFO("Processing device settings command with function selector = 3 (Save)\n");
           m_inertial_device->saveSettingsAsStartup();
         }break;
-        
+
         //Load Saved Settings
         case 4:
         {
@@ -4595,13 +4611,13 @@ bool Microstrain::device_settings(ros_mscl::DeviceSettings::Request &req, ros_ms
         }break;
 
         //Unsupported function selector
-        default: 
+        default:
         {
           ROS_INFO("Error: Unsupported function selector for device settings command\n");
           return res.success;
         }break;
       }
- 
+
       res.success = true;
     }
     catch(mscl::Error &e)
@@ -4617,7 +4633,7 @@ bool Microstrain::device_settings(ros_mscl::DeviceSettings::Request &req, ros_ms
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 // Commanded Velocity Zupt Service
 /////////////////////////////////////////////////////////////////////////////////////////////////////
- 
+
 bool Microstrain::commanded_vel_zupt(std_srvs::Trigger::Request &req, std_srvs::Trigger::Response &res)
 {
   res.success = false;
@@ -4637,7 +4653,7 @@ bool Microstrain::commanded_vel_zupt(std_srvs::Trigger::Request &req, std_srvs::
 
   return res.success;
 }
-  
+
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 // Commanded Angular Rate Zupt Service
@@ -4694,8 +4710,8 @@ bool Microstrain::external_heading_update(ros_mscl::ExternalHeadingUpdate::Reque
       {
         m_inertial_device->sendExternalHeadingUpdate(heading_data);
         ROS_INFO("Sent External Heading update.\n");
-      }      
-       
+      }
+
       res.success = true;
     }
     catch(mscl::Error &e)
@@ -4712,7 +4728,7 @@ bool Microstrain::external_heading_update(ros_mscl::ExternalHeadingUpdate::Reque
 // Set Relative Position Reference Service
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 
-bool Microstrain::set_relative_position_reference(ros_mscl::SetRelativePositionReference::Request &req, 
+bool Microstrain::set_relative_position_reference(ros_mscl::SetRelativePositionReference::Request &req,
                                                   ros_mscl::SetRelativePositionReference::Response &res)
 {
   res.success = false;
@@ -4727,12 +4743,12 @@ bool Microstrain::set_relative_position_reference(ros_mscl::SetRelativePositionR
       ref.autoConfig = !((bool)req.source);
 
       m_inertial_device->setRelativePositionReference(ref);
- 
+
       if(req.source == 0)
         ROS_INFO("Setting reference position to RTK base station (automatic)");
       else
         ROS_INFO("Setting reference position to: [%f, %f, %f], ref frame = %d", req.position.x, req.position.y, req.position.z, req.frame);
-      
+
       res.success = true;
     }
     catch(mscl::Error &e)
@@ -4748,10 +4764,10 @@ bool Microstrain::set_relative_position_reference(ros_mscl::SetRelativePositionR
 // Get Relative Position Reference Service
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 
-bool Microstrain::get_relative_position_reference(ros_mscl::GetRelativePositionReference::Request &req, 
+bool Microstrain::get_relative_position_reference(ros_mscl::GetRelativePositionReference::Request &req,
                                                   ros_mscl::GetRelativePositionReference::Response &res)
 {
-  res.success = false; 
+  res.success = false;
 
   if(m_inertial_device)
   {
@@ -4763,13 +4779,13 @@ bool Microstrain::get_relative_position_reference(ros_mscl::GetRelativePositionR
         ROS_INFO("Reference position is set to RTK base station (automatic)");
       else
         ROS_INFO("Reference position is: [%f, %f, %f], ref frame = %d", ref.position.x(), ref.position.y(), ref.position.z(), (int)ref.position.referenceFrame);
-      
+
       res.source     = !ref.autoConfig;
       res.frame      = (int)ref.position.referenceFrame;
       res.position.x = ref.position.x();
       res.position.y = ref.position.y();
       res.position.z = ref.position.z();
-       
+
       res.success = true;
     }
     catch(mscl::Error &e)
@@ -4789,17 +4805,17 @@ bool Microstrain::get_relative_position_reference(ros_mscl::GetRelativePositionR
 void Microstrain::device_status_callback()
 {
   if(!m_inertial_device)
-  {    
+  {
     return;
   }
-  
+
   if(m_inertial_device->features().supportsCommand(mscl::MipTypes::Command::CMD_DEVICE_STATUS))
   {
-    if(m_inertial_device->features().supportedStatusSelectors().size() > 1) 
+    if(m_inertial_device->features().supportedStatusSelectors().size() > 1)
     {
       mscl::DeviceStatusData statusData = m_inertial_device->getDiagnosticDeviceStatus();
       mscl::DeviceStatusMap  status     = statusData.asMap();
-      
+
       m_device_status_msg.system_timer_ms = statusData.systemTimerInMS;
 
       mscl::DeviceStatusMap::iterator it;
@@ -4875,7 +4891,7 @@ void Microstrain::device_status_callback()
         case mscl::DeviceStatusValues::GnssMessageInfo_MessageParsingErrors:
           m_device_status_msg.gps_parser_errors = atoi(it->second.c_str());
           break;
-       
+
         case mscl::DeviceStatusValues::GnssMessageInfo_MessagesRead:
           m_device_status_msg.gps_message_count = atoi(it->second.c_str());
           break;
@@ -4914,13 +4930,13 @@ void Microstrain::device_status_callback()
 void Microstrain::print_packet_stats()
 {
   if(m_inertial_device)
-  {    
+  {
     return;
   }
-  
+
   if(m_inertial_device->features().supportsCommand(mscl::MipTypes::Command::CMD_DEVICE_STATUS))
   {
-    if(m_inertial_device->features().supportedStatusSelectors().size() > 1) 
+    if(m_inertial_device->features().supportedStatusSelectors().size() > 1)
     {
       mscl::DeviceStatusData status = m_inertial_device->getDiagnosticDeviceStatus();
 
@@ -4931,7 +4947,7 @@ void Microstrain::print_packet_stats()
 
       ROS_DEBUG_THROTTLE(1.0, "%u IMU (%u errors) Packets",
                            m_imu_valid_packet_count, m_imu_timeout_packet_count + m_imu_checksum_error_packet_count);
-      
+
       m_gnss_checksum_error_packet_count[GNSS1_ID] = status.gnssMessageInfo().messageParsingErrors;
       m_gnss_valid_packet_count[GNSS1_ID]          = status.gnssMessageInfo().messagesRead;
       m_gnss_timeout_packet_count[GNSS1_ID]        = status.gnssStreamInfo().outgoingPacketsDropped;
