@@ -24,11 +24,7 @@ if(NOT EXISTS "${COMMON_DIR}/msg")
   # Initialize and update the submodule
   execute_process(
     WORKING_DIRECTORY "${${PROJECT_NAME}_SOURCE_DIR}"
-    COMMAND ${CMAKE_COMMAND} -E env ${GIT_EXECUTABLE} submodule init
-  )
-  execute_process(
-    WORKING_DIRECTORY "${${PROJECT_NAME}_SOURCE_DIR}"
-    COMMAND ${CMAKE_COMMAND} -E env ${GIT_EXECUTABLE} submodule update --recursive
+    COMMAND ${CMAKE_COMMAND} -E env ${GIT_EXECUTABLE} submodule update --recursive --init
   )
 endif()
 

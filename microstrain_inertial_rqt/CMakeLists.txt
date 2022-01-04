@@ -15,6 +15,27 @@ find_package(catkin REQUIRED COMPONENTS
   microstrain_inertial_msgs
 )
 
+# Locate the common code and messages
+set(COMMON_NAME "microstrain_inertial_rqt_common")
+set(COMMON_DIR "${${PROJECT_NAME}_SOURCE_DIR}/${COMMON_NAME}")
+
+# Make sure that the submodule has been properly initialized
+if(NOT EXISTS "${COMMON_DIR}/resource")
+  message(STATUS "Initializing ${COMMON_DIR} submodule. This should only happen once.")
+
+  # Make sure we can find the git executable
+  find_package(Git)
+  if(NOT Git_FOUND)
+    message(FATAL_ERROR "Unable to initialize submodule because we could not find the git executable. Please clone this repo using 'git clone --recursive'")
+  endif()
+
+  # Initialize and update the submodule  )
+  execute_process(
+    WORKING_DIRECTORY "${${PROJECT_NAME}_SOURCE_DIR}"
+    COMMAND ${CMAKE_COMMAND} -E env ${GIT_EXECUTABLE} submodule update --recursive --init
+  )
+endif()
+
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
 ## See http://ros.org/doc/api/catkin/html/user_guide/setup_dot_py.html
@@ -49,8 +70,8 @@ catkin_package(
 # See http://ros.org/doc/api/catkin/html/adv_user_guide/variables.html
 
 install(DIRECTORY
-  microstrain_inertial_rqt_common/resource
-  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/microstrain_inertial_rqt_common
+${COMMON_NAME}/resource
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/${COMMON_NAME}
 )
 
 install(DIRECTORY
@@ -59,6 +80,6 @@ install(DIRECTORY
 )
 
 install(FILES
-  microstrain_inertial_rqt_common/plugin.xml
-  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/microstrain_inertial_rqt_common
+${COMMON_NAME}/plugin.xml
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/${COMMON_NAME}
 )
