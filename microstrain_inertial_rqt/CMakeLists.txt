@@ -70,7 +70,7 @@ catkin_package(
 # See http://ros.org/doc/api/catkin/html/adv_user_guide/variables.html
 
 install(DIRECTORY
-${COMMON_NAME}/resource
+  ${COMMON_NAME}/resource
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/${COMMON_NAME}
 )
 
@@ -80,6 +80,6 @@ install(DIRECTORY
 )
 
 install(FILES
-${COMMON_NAME}/plugin.xml
+  ${COMMON_NAME}/plugin.xml
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/${COMMON_NAME}
 )
