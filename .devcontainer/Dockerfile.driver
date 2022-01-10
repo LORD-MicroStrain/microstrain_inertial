@@ -58,6 +58,9 @@ RUN set -ex \
     # Remove any build time dependencies from the package.xml
     && find /tmp/catkin_ws/src -name "package.xml" | xargs -I{} sed -i '/.*build.*_depend.*/d' {} \
     \
+    # Fix for arm apt-get install command?
+    && apt-get install humanity-icon-theme -y \
+    \
     # Finally install the dependencies
     && rosdep install --from-paths /tmp/catkin_ws/src --ignore-src -r -y \
     \
@@ -83,8 +86,6 @@ RUN set -ex \
         microstrain
 USER microstrain
 
-# Users can override this file to a different launch file if they want
-ENV MICROSTRAIN_LAUNCH_FILE "/opt/ros/${DOCKER_ROS_VERSION}/share/microstrain_inertial_driver/launch/microstrain.launch"
-
-# Set the entrypoint to the launch file to allow the CMD to override launch params
-ENTRYPOINT ["/bin/bash", "-c", "source /opt/ros/${DOCKER_ROS_VERSION}/setup.bash && roslaunch ${MICROSTRAIN_LAUNCH_FILE}"]
+# Add the entrypoint file and use that as the entrypoint
+COPY .devcontainer/docker-entrypoint.sh /usr/local/bin/
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]

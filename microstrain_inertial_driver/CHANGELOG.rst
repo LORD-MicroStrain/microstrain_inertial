@@ -1,6 +1,20 @@
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Changelog for package ros_mscl
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Changelog for package microstrain_inertial_driver
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+2.4.1 (2022-01-06)
+------------------
+* Deprecated args will no longer override params_file unless actually used
+* Contributors: robbiefish
+
+2.4.0 (2022-01-05)
+------------------
+* BREAKING: Changes default namespace from /gx5 to / which is more generic to all usecases as customers are often not using a gx5 device
+* BREAKING: Changes the name argument to namespace which is more descriptive of what it was doing
+* Moves most launch file parameters to yml file and allows user to override all default parameters by specifying a different yml file via the params_file argument
+* Adds new argument node_name to launch file that allows users to change the name of the node
+* Adds documentation for each launch file argument
+* Contributors: robbiefish
 
 2.3.0 (2021-12-22)
 ------------------

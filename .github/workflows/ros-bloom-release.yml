@@ -54,8 +54,8 @@ jobs:
 
       # Release melodic
       - name: Release Melodic
-        run: bloom-release --rosdistro melodic --track melodic microstrain_inertial --no-web --non-interactive
+        run: bloom-release microstrain_inertial --rosdistro melodic --no-web --non-interactive
         
       # Release noetic
       - name: Release Noetic
-        run: bloom-release --rosdistro noetic --track noetic microstrain_inertial --no-web --non-interactive
+        run: bloom-release microstrain_inertial --rosdistro noetic --no-web --non-interactive
