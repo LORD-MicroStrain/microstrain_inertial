@@ -218,9 +218,12 @@ bool Microstrain::activate_node()
       publishers_.gnss_fix_info_pub_[i]->on_activate();
   }
 
-  //RTK Data publisher
+  //RTK Data publishers
   if(publishers_.rtk_pub_)
     publishers_.rtk_pub_->on_activate();
+
+  if(publishers_.rtk_pub_v1_)
+    publishers_.rtk_pub_v1_->on_activate();
   
   //NMEA publisher
   if (publishers_.nmea_sentence_pub_)
@@ -300,9 +303,12 @@ bool Microstrain::deactivate_node()
       publishers_.gnss_fix_info_pub_[i]->on_deactivate();
   }
 
-  //RTK Data publisher
+  //RTK Data publishers
   if(publishers_.rtk_pub_)
     publishers_.rtk_pub_->on_deactivate();
+
+  if(publishers_.rtk_pub_v1_)
+    publishers_.rtk_pub_v1_->on_deactivate();
   
   //Filter Publishers
   if(publishers_.filter_status_pub_)
@@ -380,9 +386,12 @@ bool Microstrain::shutdown_or_cleanup_node()
       publishers_.gnss_fix_info_pub_[i].reset();
   }
 
-  //RTK Data publisher
+  //RTK Data publishers
   if(publishers_.rtk_pub_)
     publishers_.rtk_pub_.reset();
+
+  if(publishers_.rtk_pub_v1_)
+    publishers_.rtk_pub_v1_.reset();
   
   //Filter Publishers
   if(publishers_.filter_status_pub_)
