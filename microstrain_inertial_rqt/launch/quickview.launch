@@ -1,6 +1,6 @@
 <launch>
   <!-- Change this argument to change the namespace that the microstrain_inertial_driver is in -->
-  <arg name="driver_namespace" default="gx5" />
+  <arg name="driver_namespace" default="" />
 
   <node name="microstrain_inertial_quickview" pkg="rqt_gui" type="rqt_gui" respawn="false" output="screen" args="--perspective-file $(find microstrain_inertial_rqt)/microstrain_inertial_rqt_common/resource/quickview.perspective">
     <!-- Pass the name of the driver in as an environment variable -->
