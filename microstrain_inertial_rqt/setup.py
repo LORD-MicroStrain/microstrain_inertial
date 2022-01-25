@@ -1,5 +1,7 @@
 import os
+import sys
 import glob
+import subprocess
 from setuptools import setup, find_packages
 
 package_name = 'microstrain_inertial_rqt'
@@ -13,6 +15,14 @@ dest_share_dir = os.path.join('share', package_name)
 dest_common_share_dir = os.path.join(dest_share_dir, common_dir)
 dest_common_resource_dir = os.path.join(dest_common_share_dir, 'resource')
 dest_common_icon_resource_dir = os.path.join(dest_common_resource_dir, 'icons')
+
+# If the submodule does not exist, initialize it
+if not os.path.isdir(common_resource_dir):
+    submodule_update_result = subprocess.run(['git submodule update --init --recursive'], capture_output=True, shell=True)
+    if submodule_update_result.returncode != 0:
+        print("Unable to initialize submodule. Error:", file=sys.stderr)
+        print(submodule_update_result.stderr, file=sys.stderr)
+        sys.exit(1)
 
 setup(
     name=package_name,
