@@ -9,7 +9,7 @@ from ament_index_python.packages import get_package_share_directory
 def generate_launch_description():
       return LaunchDescription([
             # Declare arguments with default values
-            DeclareLaunchArgument('driver_namespace', default_value='gx5'),
+            DeclareLaunchArgument('driver_namespace', default_value='/'),
 
             # Substitute environment variable with the passed argument
             SetEnvironmentVariable('MICROSTRAIN_INERTIAL_RQT_NODE_NAME', LaunchConfiguration('driver_namespace')),
