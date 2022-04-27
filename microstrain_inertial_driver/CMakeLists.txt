@@ -181,4 +181,5 @@ install(FILES ${BOOST_LIBS} ${MSCL_DIR}/libmscl.so
 #############
 
 ## Run roslint on only the node files for now
+set(ROSLINT_CPP_OPTS "--filter=-whitespace/line_length,-runtime/references,-readability/fn_size")
 roslint_cpp(${LIB_SRC_FILES} ${LIB_INC_FILES} ${NODE_SRC_FILES} ${NODE_INC_FILES})
