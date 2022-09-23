@@ -62,6 +62,11 @@ int Microstrain::run()
   device_status_timer_ = create_timer<MicrostrainPublishers>(&node, 1.0,
     &MicrostrainPublishers::publishDeviceStatus, &publishers_);
 
+  // Start a timer to log debug information if debug is enabled
+  if (config_.debug_)
+    log_debug_timer_ = create_timer<MicrostrainNodeBase>(&node, 1.0,
+      &MicrostrainNodeBase::logDeviceDebugInfo, this);
+
   // Start the aux timer if we were requested to do so
   if (config_.supports_rtk_ && config_.publish_nmea_)
   {

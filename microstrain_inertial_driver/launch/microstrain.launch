@@ -38,21 +38,24 @@
     <rosparam file="$(find microstrain_inertial_driver)/microstrain_inertial_driver_common/config/params.yml" command="load" />
 
     <!-- NOTE: These parameters are deprecated and will be removed in a future release. It is strongly recommended to use the new params_file option instead -->
-    <param name="port"                  value="$(arg port)"                  type="str"  unless="$(eval arg('port') == '')" />
-    <param name="aux_port"              value="$(arg aux_port)"              type="str"  unless="$(eval arg('aux_port') == '')" />
-    <param name="baudrate"              value="$(arg baudrate)"              type="int"  unless="$(eval arg('baudrate') == '')" />
-    <param name="imu_frame_id"          value="$(arg imu_frame_id)"          type="str"  unless="$(eval arg('imu_frame_id') == '')" />
-    <param name="gnss1_frame_id"        value="$(arg gnss1_frame_id)"        type="str"  unless="$(eval arg('gnss1_frame_id') == '')" />
-    <param name="gnss2_frame_id"        value="$(arg gnss2_frame_id)"        type="str"  unless="$(eval arg('gnss2_frame_id') == '')" />
-    <param name="filter_frame_id"       value="$(arg filter_frame_id)"       type="str"  unless="$(eval arg('filter_frame_id') == '')" />
-    <param name="filter_child_frame_id" value="$(arg filter_child_frame_id)" type="str"  unless="$(eval arg('filter_child_frame_id') == '')" />
-    <param name="nmea_frame_id"         value="$(arg nmea_frame_id)"         type="str"  unless="$(eval arg('nmea_frame_id') == '')" />
-    <param name="imu_data_rate"         value="$(arg imu_data_rate)"         type="int"  unless="$(eval arg('imu_data_rate') == '')" />
-    <param name="filter_data_rate"      value="$(arg filter_data_rate)"      type="int"  unless="$(eval arg('filter_data_rate') == '')" />
-    <param name="use_enu_frame"         value="$(arg use_enu_frame)"         type="bool" unless="$(eval arg('use_enu_frame') == '')" />
+    <param name="port"                  value="$(arg port)"                  type="str"    unless="$(eval arg('port') == '')" />
+    <param name="aux_port"              value="$(arg aux_port)"              type="str"    unless="$(eval arg('aux_port') == '')" />
+    <param name="baudrate"              value="$(arg baudrate)"              type="int"    unless="$(eval arg('baudrate') == '')" />
+    <param name="imu_frame_id"          value="$(arg imu_frame_id)"          type="str"    unless="$(eval arg('imu_frame_id') == '')" />
+    <param name="gnss1_frame_id"        value="$(arg gnss1_frame_id)"        type="str"    unless="$(eval arg('gnss1_frame_id') == '')" />
+    <param name="gnss2_frame_id"        value="$(arg gnss2_frame_id)"        type="str"    unless="$(eval arg('gnss2_frame_id') == '')" />
+    <param name="filter_frame_id"       value="$(arg filter_frame_id)"       type="str"    unless="$(eval arg('filter_frame_id') == '')" />
+    <param name="filter_child_frame_id" value="$(arg filter_child_frame_id)" type="str"    unless="$(eval arg('filter_child_frame_id') == '')" />
+    <param name="nmea_frame_id"         value="$(arg nmea_frame_id)"         type="str"    unless="$(eval arg('nmea_frame_id') == '')" />
+    <param name="imu_data_rate"         value="$(arg imu_data_rate)"         type="float"  unless="$(eval arg('imu_data_rate') == '')" />
+    <param name="filter_data_rate"      value="$(arg filter_data_rate)"      type="float"  unless="$(eval arg('filter_data_rate') == '')" />
+    <param name="use_enu_frame"         value="$(arg use_enu_frame)"         type="bool"   unless="$(eval arg('use_enu_frame') == '')" />
 
     <!-- If you want to override any settings specified in the params.yml file, make a new yaml file, and set the value via the params_file arg -->
     <rosparam file="$(arg params_file)" command="load" unless="$(eval arg('params_file') == '')" />
+
+    <!-- Supported overrides -->
+    <param name="debug" value="$(arg debug)" type="bool" />
   </node>
 
 </launch>
