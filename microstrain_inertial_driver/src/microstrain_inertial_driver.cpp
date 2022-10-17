@@ -179,22 +179,18 @@ bool Microstrain::activate_node()
   }
 
   // Start a timer around a wrapper function to catch errors
-  main_parsing_timer_ = create_timer<Microstrain>(node_, timer_update_rate_hz_,
-      &Microstrain::parse_and_publish_main_wrapper, this);
-  device_status_timer_ = create_timer<Microstrain>(node_, 1.0,
-      &Microstrain::device_status_wrapper, this);
+  main_parsing_timer_ = create_timer_wrapper<Microstrain, &Microstrain::parse_and_publish_main_wrapper>(timer_update_rate_hz_);
+  device_status_timer_ = create_timer_wrapper<Microstrain, &Microstrain::device_status_wrapper>(1.0);
 
   // Start a timer to log debug information if debug is enabled
   if (config_.debug_)
-    log_debug_timer_ = create_timer<Microstrain>(node_, 1.0,
-        &Microstrain::logDeviceDebugInfo, this);
+    log_debug_timer_ = create_timer_wrapper<MicrostrainNodeBase, &MicrostrainNodeBase::logDeviceDebugInfo>(1.0);
 
   // Start the aux timer if we were requested to do so
   if (config_.supports_rtk_ && config_.publish_nmea_)
   {
     RCLCPP_INFO(this->get_logger(), "Starting aux port parsing");
-    aux_parsing_timer_ = create_timer<Microstrain>(node_, 2.0,
-        &Microstrain::parse_and_publish_aux_wrapper, this);
+    aux_parsing_timer_ = create_timer_wrapper<Microstrain, &Microstrain::parse_and_publish_aux_wrapper>(2.0);
   }
 
   //Activate publishers
