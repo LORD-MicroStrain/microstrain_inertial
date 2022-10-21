@@ -5,8 +5,13 @@ project(microstrain_inertial_driver)
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Force a static build
+# Force some options for this module and the MIP SDK
+set(BUILD_SHARED_LIBS_TEMP "${BUILD_SHARED_LIBS}")
+set(BUILD_EXAMPLES_TEMP "${BUILD_EXAMPLES}")
+set(BUILD_TESTING_TEMP "${BUILD_TESTING}")
 set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
+set(BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+set(BUILD_TESTING OFF CACHE BOOL "" FORCE)
 
 # Locate the common code and messages
 set(COMMON_NAME "microstrain_inertial_driver_common")
@@ -35,8 +40,6 @@ if(NOT EXISTS "${COMMON_SRC_DIR}")
 endif()
 
 # Include the MIP SDK source
-set(BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
-set(BUILD_TESTING OFF CACHE BOOL "" FORCE)
 add_subdirectory("${MIP_SDK_DIR}" EXCLUDE_FROM_ALL)
 include_directories("${MIP_SDK_SRC_DIR}")
 
@@ -205,3 +208,8 @@ set(ROSLINT_CPP_OPTS "--filter=-whitespace/line_length,-runtime/references,-read
 roslint_cpp()
 
 roslint_add_test()
+
+# Reset the forced options
+set(BUILD_SHARED_LIBS OFF CACHE BOOL "${BUILD_SHARED_LIBS_TEMP}" FORCE)
+set(BUILD_EXAMPLES OFF CACHE BOOL "${BUILD_EXAMPLES_TEMP}" FORCE)
+set(BUILD_TESTING OFF CACHE BOOL "${BUILD_TESTING_TEMP}" FORCE)
