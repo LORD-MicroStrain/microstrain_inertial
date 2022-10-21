@@ -25,7 +25,7 @@
 #include <iostream>
 #include <fstream>
 
-#include "microstrain_inertial_driver_common/microstrain_node_base.h"
+#include "microstrain_inertial_driver_common/node_common.h"
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 ///
@@ -39,7 +39,7 @@ namespace microstrain
 ///
 /// \brief Microstrain class
 ///
-class Microstrain : public rclcpp_lifecycle::LifecycleNode, public MicrostrainNodeBase
+class Microstrain : public rclcpp_lifecycle::LifecycleNode, public NodeCommon
 {
  public:
   Microstrain();
@@ -58,7 +58,6 @@ class Microstrain : public rclcpp_lifecycle::LifecycleNode, public MicrostrainNo
 
   void parse_and_publish_main_wrapper();
   void parse_and_publish_aux_wrapper();
-  void device_status_wrapper();
 
  private:
   void handle_exception();

@@ -1,11 +1,19 @@
 cmake_minimum_required(VERSION 3.5)
 project(microstrain_inertial_driver)
 
+# C++ 14 required
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_C_STANDARD 99)
+set(CMAKE_C_STANDARD_REQUIRED ON)
+
 # Locate the common code and messages
 set(COMMON_NAME "microstrain_inertial_driver_common")
 set(COMMON_DIR "${${PROJECT_NAME}_SOURCE_DIR}/${COMMON_NAME}")
 set(COMMON_SRC_DIR "${COMMON_DIR}/src")
 set(COMMON_INC_DIR "${COMMON_DIR}/include/${COMMON_NAME}")
+set(MIP_SDK_DIR "${COMMON_DIR}/mip_sdk")
+set(MIP_SDK_SRC_DIR "${MIP_SDK_DIR}/src")
 
 # Make sure that the submodule has been properly initialized
 if(NOT EXISTS "${COMMON_DIR}/src")
@@ -24,14 +32,11 @@ if(NOT EXISTS "${COMMON_DIR}/src")
   )
 endif()
 
-# Download and install MSCL
-include(${COMMON_DIR}/cmake/download_mscl.cmake)
-download_mscl(VERSION "64.2.2")
-
-# Default to C++14
-if(NOT CMAKE_CXX_STANDARD)
-  set(CMAKE_CXX_STANDARD 14)
-endif()
+# Include the MIP SDK source
+set(BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+set(BUILD_TESTING OFF CACHE BOOL "" FORCE)
+add_subdirectory("${MIP_SDK_DIR}")
+include_directories("${MIP_SDK_SRC_DIR}")
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-implicit-function-declaration -Wno-incompatible-pointer-types -fno-builtin-memcpy")
@@ -102,23 +107,33 @@ set(NODE_SRC_FILES
 ament_package()
 
 set(LIB_SRC_FILES
-  ${COMMON_SRC_DIR}/microstrain_subscribers.cpp
-  ${COMMON_SRC_DIR}/microstrain_publishers.cpp
-  ${COMMON_SRC_DIR}/microstrain_node_base.cpp
-  ${COMMON_SRC_DIR}/microstrain_services.cpp
-  ${COMMON_SRC_DIR}/microstrain_parser.cpp
-  ${COMMON_SRC_DIR}/microstrain_config.cpp
+  ${COMMON_SRC_DIR}/subscribers.cpp
+  ${COMMON_SRC_DIR}/publishers.cpp
+  ${COMMON_SRC_DIR}/node_common.cpp
+  ${COMMON_SRC_DIR}/services.cpp
+  ${COMMON_SRC_DIR}/config.cpp
+
+  ${COMMON_SRC_DIR}/utils/mappings/mip_publisher_mapping.cpp
+
+  ${COMMON_SRC_DIR}/utils/mip/mip_device_wrapper.cpp
+  ${COMMON_SRC_DIR}/utils/mip/mip_device_serial.cpp
+
   src/microstrain_inertial_driver.cpp
 )
 set(LIB_INC_FILES
-  ${COMMON_INC_DIR}/microstrain_subscribers.h
-  ${COMMON_INC_DIR}/microstrain_publishers.h
-  ${COMMON_INC_DIR}/microstrain_node_base.h
-  ${COMMON_INC_DIR}/microstrain_services.h
-  ${COMMON_INC_DIR}/microstrain_parser.h
-  ${COMMON_INC_DIR}/microstrain_config.h
-  ${COMMON_INC_DIR}/microstrain_defs.h
-  ${COMMON_INC_DIR}/microstrain_ros_funcs.h
+  ${COMMON_INC_DIR}/subscribers.h
+  ${COMMON_INC_DIR}/publishers.h
+  ${COMMON_INC_DIR}/node_common.h
+  ${COMMON_INC_DIR}/services.h
+  ${COMMON_INC_DIR}/config.h
+  ${COMMON_INC_DIR}/utils/ros_compat.h
+
+  ${COMMON_INC_DIR}/utils/mappings/mip_mapping.h
+  ${COMMON_INC_DIR}/utils/mappings/mip_publisher_mapping.h
+
+  ${COMMON_INC_DIR}/utils/mip/mip_device_wrapper.h
+  ${COMMON_INC_DIR}/utils/mip/mip_device_serial.h
+
   include/${PROJECT_NAME}/microstrain_inertial_driver.h
 )
 add_library(${PROJECT_NAME} ${LIB_SRC_FILES} ${LIB_INC_FILES})
@@ -142,6 +157,9 @@ ament_target_dependencies(${PROJECT_NAME}
 # Executables
 add_executable(${PROJECT_NAME}_node ${NODE_SRC_FILES} ${NODE_INC_FILES})
 
+# Annoying, but the ROS types don't match up with the MIP types for floats and doubles, so ignore those warnings for now
+set_source_files_properties(${COMMON_SRC_DIR}/services.cpp PROPERTIES COMPILE_OPTIONS "-Wno-narrowing")
+
 # Let the code know if it is being compiled with ROS1 or ROS2
 if(DEFINED ENV{ROS_VERSION})
   add_definitions(-DMICROSTRAIN_ROS_VERSION=$ENV{ROS_VERSION})
@@ -164,12 +182,9 @@ if(DEFINED ENV{ROS_DISTRO})
   endif()
 endif()
 
-# Allow the MSCL include directory to be accessed
-include_directories(${MSCL_INC_PATH} ${BOOST_INC_PATH})
-
 # Linking
 target_link_libraries(${PROJECT_NAME}
-  ${MSCL_LIB_PATH}
+  mip
   ${catkin_LIBRARIES}
 )
 target_link_libraries(${PROJECT_NAME}_node
@@ -194,10 +209,4 @@ install(DIRECTORY launch config
 
 install(DIRECTORY ${COMMON_DIR}/config
   DESTINATION share/${PROJECT_NAME}/${COMMON_NAME}
-)
-
-# We also have to install MSCL and it's dependencies so it can be found at runtime
-file(GLOB BOOST_LIBS "${MSCL_DIR}/Boost/lib/*")
-install(FILES ${BOOST_LIBS} ${MSCL_DIR}/libmscl.so
-  DESTINATION lib
 )
