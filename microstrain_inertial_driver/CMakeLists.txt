@@ -32,7 +32,8 @@ if(NOT EXISTS "${COMMON_SRC_DIR}")
 endif()
 
 # Include the MIP SDK source
-option(BUILD_EXAMPLES "" OFF)
+set(BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+set(BUILD_TESTING OFF CACHE BOOL "" FORCE)
 add_subdirectory("${MIP_SDK_DIR}")
 include_directories("${MIP_SDK_SRC_DIR}")
 
