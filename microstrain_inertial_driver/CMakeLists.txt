@@ -5,6 +5,9 @@ project(microstrain_inertial_driver)
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# Force a static build
+set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
+
 # Locate the common code and messages
 set(COMMON_NAME "microstrain_inertial_driver_common")
 set(COMMON_DIR "${${PROJECT_NAME}_SOURCE_DIR}/${COMMON_NAME}")
@@ -34,7 +37,7 @@ endif()
 # Include the MIP SDK source
 set(BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 set(BUILD_TESTING OFF CACHE BOOL "" FORCE)
-add_subdirectory("${MIP_SDK_DIR}")
+add_subdirectory("${MIP_SDK_DIR}" EXCLUDE_FROM_ALL)
 include_directories("${MIP_SDK_SRC_DIR}")
 
 ## Find catkin macros and libraries
@@ -178,7 +181,7 @@ target_link_libraries(${PROJECT_NAME}_node
 ## Install ##
 #############
 
-install(TARGETS ${PROJECT_NAME} ${PROJECT_NAME}_node
+install(TARGETS ${PROJECT_NAME}_node
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
