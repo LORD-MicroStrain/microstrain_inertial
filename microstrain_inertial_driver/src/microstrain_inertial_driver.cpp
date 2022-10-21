@@ -27,7 +27,6 @@
 #include <ros/callback_queue.h>
 #include <tf2/LinearMath/Transform.h>
 
-#include "mscl/mscl.h"
 #include "microstrain_inertial_driver/microstrain_inertial_driver.h"
 #include "microstrain_inertial_driver/microstrain_diagnostic_updater.h"
 
@@ -49,54 +48,56 @@ int Microstrain::run()
   ros::NodeHandle private_nh("~");
 
   // Configure the device and setup publishers/services/subscribers
-  if (!MicrostrainNodeBase::initialize(&node))
+  if (!NodeCommon::initialize(&node))
+  {
     ROS_FATAL("Unable to initialize node base");
-  if (!MicrostrainNodeBase::configure(&private_nh))
+    return 1;
+  }
+  if (!NodeCommon::configure(&private_nh))
+  {
     ROS_FATAL("Unable to configure node base");
-  if (!MicrostrainNodeBase::activate())
+    return 2;
+  }
+  if (!NodeCommon::activate())
+  {
     ROS_FATAL("Unable to activate node base");
+    return 3;
+  }
 
   // Start the timers that will do the actual processing
-  main_parsing_timer_ = create_timer<MicrostrainNodeBase>(&node, timer_update_rate_hz_,
-    &MicrostrainNodeBase::parseAndPublishMain, this);
-  device_status_timer_ = create_timer<MicrostrainPublishers>(&node, 1.0,
-    &MicrostrainPublishers::publishDeviceStatus, &publishers_);
+  main_parsing_timer_ = create_timer<NodeCommon>(&node, timer_update_rate_hz_,
+    &NodeCommon::parseAndPublishMain, this);
 
   // Start the aux timer if we were requested to do so
   if (config_.supports_rtk_ && config_.publish_nmea_)
   {
     ROS_INFO("Starting aux port parsing");
-    aux_parsing_timer_ = create_timer<MicrostrainNodeBase>(&node, 2.0,
-      &MicrostrainNodeBase::parseAndPublishAux, this);
+    aux_parsing_timer_ = create_timer<NodeCommon>(&node, 2.0,
+      &NodeCommon::parseAndPublishAux, this);
   }
 
   // Spin until we are shutdown
-  int status = 0;  // Success status. If we fail at any point this will be set to 1 and returned
+  int status = 0;  // Success status. If we fail at any point this will be set to a positive number and returned
   try
   {
     ROS_INFO("Starting Data Parsing");
     ros::spin();
   }
-  catch (mscl::Error_Connection)
+  catch (std::exception& e)
   {
-    status = 1;
-    ROS_ERROR("Device Disconnected");
-  }
-  catch (mscl::Error& e)
-  {
-    status = 1;
+    status = 4;
     ROS_ERROR("Error: %s", e.what());
   }
 
   // Deactivate and shutdown
-  if (!MicrostrainNodeBase::deactivate())
+  if (!NodeCommon::deactivate())
   {
-    status = 1;
+    status = 5;
     ROS_ERROR("Error while deactivating node");
   }
-  if (!MicrostrainNodeBase::shutdown())
+  if (!NodeCommon::shutdown())
   {
-    status = 1;
+    status = 5;
     ROS_ERROR("Error while shutting down node");
   }
 

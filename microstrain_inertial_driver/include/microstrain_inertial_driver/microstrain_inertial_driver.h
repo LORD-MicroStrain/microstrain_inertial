@@ -18,7 +18,7 @@
 #include <iostream>
 #include <fstream>
 
-#include "microstrain_inertial_driver_common/microstrain_node_base.h"
+#include "microstrain_inertial_driver_common/node_common.h"
 
 namespace microstrain
 {
@@ -26,7 +26,7 @@ namespace microstrain
 /**
  * Implements node functionality for microstrain inertial node
  */
-class Microstrain : public MicrostrainNodeBase
+class Microstrain : public NodeCommon
 {
 public:
   /**
