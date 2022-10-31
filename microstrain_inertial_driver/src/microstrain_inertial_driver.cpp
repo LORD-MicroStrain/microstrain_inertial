@@ -69,7 +69,7 @@ int Microstrain::run()
     &NodeCommon::parseAndPublishMain, this);
 
   // Start the aux timer if we were requested to do so
-  if (config_.supports_rtk_ && config_.publish_nmea_)
+  if (config_.publish_nmea_ && config_.aux_device_ != nullptr)
   {
     ROS_INFO("Starting aux port parsing");
     aux_parsing_timer_ = create_timer<NodeCommon>(&node, 2.0,
