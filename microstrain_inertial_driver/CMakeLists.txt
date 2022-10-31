@@ -121,8 +121,10 @@ set(LIB_SRC_FILES
 
   ${COMMON_SRC_DIR}/utils/mappings/mip_publisher_mapping.cpp
 
-  ${COMMON_SRC_DIR}/utils/mip/mip_device_wrapper.cpp
-  ${COMMON_SRC_DIR}/utils/mip/mip_device_serial.cpp
+  ${COMMON_SRC_DIR}/utils/mip/ros_mip_device.cpp
+  ${COMMON_SRC_DIR}/utils/mip/ros_mip_device_main.cpp
+  ${COMMON_SRC_DIR}/utils/mip/ros_mip_device_aux.cpp
+  ${COMMON_SRC_DIR}/utils/mip/ros_connection.cpp
 
   src/microstrain_inertial_driver.cpp
 )
@@ -137,8 +139,10 @@ set(LIB_INC_FILES
   ${COMMON_INC_DIR}/utils/mappings/mip_mapping.h
   ${COMMON_INC_DIR}/utils/mappings/mip_publisher_mapping.h
 
-  ${COMMON_INC_DIR}/utils/mip/mip_device_wrapper.h
-  ${COMMON_INC_DIR}/utils/mip/mip_device_serial.h
+  ${COMMON_INC_DIR}/utils/mip/ros_mip_device.h
+  ${COMMON_INC_DIR}/utils/mip/ros_mip_device_main.h
+  ${COMMON_INC_DIR}/utils/mip/ros_mip_device_aux.h
+  ${COMMON_INC_DIR}/utils/mip/ros_connection.h
 
   include/${PROJECT_NAME}/microstrain_inertial_driver.h
 )

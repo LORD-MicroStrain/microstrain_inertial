@@ -177,7 +177,7 @@ bool Microstrain::activate_node()
       &Microstrain::parse_and_publish_main_wrapper, this);
 
   // Start the aux timer if we were requested to do so
-  if (config_.supports_rtk_ && config_.publish_nmea_)
+  if (config_.publish_nmea_ && config_.aux_device_ != nullptr)
   {
     RCLCPP_INFO(this->get_logger(), "Starting aux port parsing");
     aux_parsing_timer_ = create_timer<Microstrain>(node_, 2.0,
