@@ -52,7 +52,7 @@
     <param name="use_enu_frame"         value="$(arg use_enu_frame)"         type="bool" unless="$(eval arg('use_enu_frame') == '')" />
 
     <!-- If you want to override any settings specified in the params.yml file, make a new yaml file, and set the value via the params_file arg -->
-    <rosparam file="$(arg params_file)" command="load" unless="$(eval arg('params_file') == '')" />
+    <rosparam file="$(arg params_file)" command="load" unless="$(eval arg('params_file') == '')" subst_value="true" />
 
     <!-- Supported overrides -->
     <param name="debug" value="$(arg debug)" type="bool" />
