@@ -11,6 +11,7 @@
   <url type="website">https://github.com/LORD-MicroStrain/microstrain_inertial</url>
 
   <buildtool_depend>catkin</buildtool_depend>
+  <buildtool_depend>git</buildtool_depend>
 
   <depend>roscpp</depend>
   <depend>cmake_modules</depend>
