@@ -190,6 +190,7 @@ set(NODE_INC_FILES
 add_executable(${PROJECT_NAME}_node ${NODE_SRC_FILES} ${NODE_INC_FILES})
 
 # Annoying, but the ROS types don't match up with the MIP types for floats and doubles, so ignore those warnings for now
+set_source_files_properties(${COMMON_SRC_DIR}/services.cpp PROPERTIES COMPILE_FLAGS "-Wno-narrowing")
 set_source_files_properties(${COMMON_SRC_DIR}/services.cpp PROPERTIES COMPILE_OPTIONS "-Wno-narrowing")
 
 # Tell the code the version of the driver that is being build
