@@ -2,6 +2,16 @@
 Changelog for package microstrain_inertial_driver
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.7.0 (2022-09-23)
+------------------
+* ROS serial improvements (`#177 <https://github.com/LORD-MicroStrain/microstrain_inertial/issues/177>`_)
+  * Adds logging loop every second that will print the number of bytes read and written
+  * Adds ability to configure the baudrate on the device using `set_baud`
+  * Changes `*_data_rate` fields to floating point numbers to allow users to configure data rates at non whole numbers
+  * Fixes bug where a quaternion would be indexed into before it was populated
+* ROS Updates params file to note required changes for devices, and corrects incorrect documentation (`#170 <https://github.com/LORD-MicroStrain/microstrain_inertial/issues/170>`_)
+* Contributors: Rob
+
 2.6.0 (2022-05-25)
 ------------------
 * ROS Fixes NMEA parsing to not fail when we find certain MIP packets (`#159 <https://github.com/LORD-MicroStrain/microstrain_inertial/issues/159>`_)

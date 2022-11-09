@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>microstrain_inertial_driver</name>
-  <version>2.6.0</version>
+  <version>2.7.0</version>
   <description>The ros_mscl package provides a driver for the LORD/Microstrain inertial products.</description>
   <author>Brian Bingham</author>
   <author>Parker Hannifin Corp</author>

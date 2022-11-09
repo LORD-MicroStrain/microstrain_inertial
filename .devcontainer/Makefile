@@ -67,6 +67,7 @@ deploy-latest:
 	\
 	# Tag the latest ROS version to the latest tag \
 	latest_tagged_image="$(driver_image_name_no_version):$(latest_tag)"; \
+	$(docker) manifest rm "$${latest_tagged_image}" || true; \
 	$(docker) manifest create "$${latest_tagged_image}" $${latest_manifest_flags}; \
 	$(docker) manifest push "$${latest_tagged_image}";
 
@@ -88,6 +89,7 @@ _deploy:
 		\
 		# Create the manifest and push it \
 		driver_manifest_name="$(driver_image_name_no_version):$(version)-$${ros_version}"; \
+		$(docker) manifest rm "$${driver_manifest_name}" || true; \
 		$(docker) manifest create "$${driver_manifest_name}" $${driver_manifest_flags} || exit 1; \
 		$(docker) manifest push "$${driver_manifest_name}" || exit 1; \
 	done || exit 1;
