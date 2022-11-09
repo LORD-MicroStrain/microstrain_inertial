@@ -60,9 +60,9 @@ template<typename Object, void (Object::*Callback)()>
 RosTimerType Microstrain::create_timer_wrapper(double rate_hz)
 {
 #ifdef MICROSTRAIN_ROLLING
-  return create_timer(std::chrono::duration<double, std::milli>(1 / rate_hz), std::bind(Callback, this));
+  return createTimer(std::chrono::duration<double, std::milli>(1 / rate_hz), std::bind(Callback, this));
 #else
-  return create_timer<Microstrain>(node_, rate_hz, Callback, this);
+  return createTimer<Microstrain>(node_, rate_hz, Callback, this);
 #endif
 }
 
