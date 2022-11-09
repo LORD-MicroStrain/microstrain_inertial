@@ -10,6 +10,7 @@
   <license>MIT</license>
   <url type="website">https://github.com/LORD-MicroStrain/microstrain_inertial</url>
 
+  <buildtool_depend>git</buildtool_depend>
   <buildtool_depend>rosidl_default_generators</buildtool_depend>
 
   <!-- Used to determine which ROS version is available at build time -->

@@ -23,12 +23,17 @@ set(COMMON_INC_DIR "${COMMON_DIR}/include/${COMMON_NAME}")
 set(MIP_SDK_DIR "${COMMON_DIR}/mip_sdk")
 set(MIP_SDK_SRC_DIR "${MIP_SDK_DIR}/src")
 
+# Some helpful options for debugging
+add_compile_options($<$<CONFIG:DEBUG>:-ggdb>)
+
+# Try to find Git
+find_package(Git)
+
 # Make sure that the submodule has been properly initialized
-if(NOT EXISTS "${COMMON_DIR}/src")
+if(NOT EXISTS "${COMMON_SRC_DIR}")
   message(STATUS "Initializing ${COMMON_DIR} submodule. This should only happen once.")
 
   # Make sure we can find the git executable
-  find_package(Git)
   if(NOT Git_FOUND)
     message(FATAL_ERROR "Unable to initialize submodule because we could not find the git executable. Please clone this repo using 'git clone --recursive'")
   endif()
@@ -36,8 +41,31 @@ if(NOT EXISTS "${COMMON_DIR}/src")
   # Initialize and update the submodule
   execute_process(
     WORKING_DIRECTORY "${${PROJECT_NAME}_SOURCE_DIR}"
-    COMMAND ${CMAKE_COMMAND} -E env ${GIT_EXECUTABLE} submodule update --init --recursive
+    COMMAND ${CMAKE_COMMAND} -E env ${GIT_EXECUTABLE} submodule update --recursive --init
   )
+endif()
+
+# Use Git to find the version
+set(DEFAULT_DRIVER_GIT_VERSION "unknown")
+if(NOT GIT_FOUND)
+  message(STATUS "Unable to find git, will build with unknown version")
+  set(DRIVER_GIT_VERSION ${DEFAULT_DRIVER_GIT_VERSION})
+else()
+  execute_process(
+    COMMAND ${CMAKE_COMMAND} -E env ${GIT_EXECUTABLE} describe --tags
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    OUTPUT_VARIABLE DRIVER_GIT_VERSION_OUT
+    ERROR_VARIABLE DRIVER_GIT_VERSION_ERR
+    RESULT_VARIABLE DRIVER_GIT_VERSION_RET
+  )
+  if(NOT ${DRIVER_GIT_VERSION_RET} EQUAL 0)
+    message(STATUS "Unable to determine version from Git, defaulting to version ${DEFAULT_DRIVER_GIT_VERSION}")
+    set(DRIVER_GIT_VERSION ${DEFAULT_DRIVER_GIT_VERSION})
+  else()
+    set(DRIVER_GIT_VERSION ${DRIVER_GIT_VERSION_OUT})
+    string(REGEX REPLACE "\n" "" DRIVER_GIT_VERSION "${DRIVER_GIT_VERSION}")
+    message(STATUS "Microstrain Driver Version: ${DRIVER_GIT_VERSION}")
+  endif()
 endif()
 
 # Include the MIP SDK source
@@ -169,6 +197,9 @@ add_executable(${PROJECT_NAME}_node ${NODE_SRC_FILES} ${NODE_INC_FILES})
 
 # Annoying, but the ROS types don't match up with the MIP types for floats and doubles, so ignore those warnings for now
 set_source_files_properties(${COMMON_SRC_DIR}/services.cpp PROPERTIES COMPILE_OPTIONS "-Wno-narrowing")
+
+# Tell the code the version of the driver that is being build
+add_definitions(-DMICROSTRAIN_DRIVER_VERSION="${DRIVER_GIT_VERSION}")
 
 # Let the code know if it is being compiled with ROS1 or ROS2
 if(DEFINED ENV{ROS_VERSION})
