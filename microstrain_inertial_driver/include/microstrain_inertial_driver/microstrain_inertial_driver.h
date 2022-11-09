@@ -18,6 +18,7 @@
 #include <time.h>
 #include <iostream>
 #include <fstream>
+#include <functional>
 
 #include "microstrain_inertial_driver_common/node_common.h"
 
@@ -48,8 +49,22 @@ class Microstrain : public rclcpp_lifecycle::LifecycleNode, public NodeCommon
   void parse_and_publish_aux_wrapper();
 
  private:
+
+  template<typename Object, void (Object::*Callback)()>
+  RosTimerType create_timer_wrapper(double rate_hz);
+
   void handle_exception();
 }; //Microstrain class
+
+template<typename Object, void (Object::*Callback)()>
+RosTimerType Microstrain::create_timer_wrapper(double rate_hz)
+{
+#ifdef MICROSTRAIN_ROLLING
+  return create_timer(std::chrono::duration<double, std::milli>(1 / rate_hz), std::bind(Callback, this));
+#else
+  return create_timer<Microstrain>(node_, rate_hz, Callback, this);
+#endif
+}
 
 } // namespace microstrain
 
