@@ -91,6 +91,7 @@ find_package(catkin REQUIRED COMPONENTS
   diagnostic_updater
   microstrain_inertial_msgs
 )
+find_package(yaml-cpp REQUIRED)
 
 ###################################
 ## catkin specific configuration ##
@@ -138,6 +139,7 @@ set(LIB_SRC_FILES
   ${COMMON_SRC_DIR}/services.cpp
   ${COMMON_SRC_DIR}/config.cpp
 
+  ${COMMON_SRC_DIR}/utils/mappings/mip_mapping.cpp
   ${COMMON_SRC_DIR}/utils/mappings/mip_publisher_mapping.cpp
 
   ${COMMON_SRC_DIR}/utils/mip/ros_mip_device.cpp
@@ -208,6 +210,7 @@ include_directories(${MSCL_INC_PATH} ${BOOST_INC_PATH})
 
 # Linking
 target_link_libraries(${PROJECT_NAME}
+  ${YAML_CPP_LIBRARIES}
   ${catkin_LIBRARIES}
   mip
 )
