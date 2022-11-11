@@ -33,6 +33,7 @@
   <depend>microstrain_inertial_msgs</depend>
   <depend>tf2_geometry_msgs</depend>
   <depend>lifecycle_msgs</depend>
+  <depend>yaml-cpp</depend>
   
   <build_depend>rclcpp_lifecycle</build_depend>
   <member_of_group>rosidl_interface_packages</member_of_group>

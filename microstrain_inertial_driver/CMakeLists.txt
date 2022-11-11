@@ -97,6 +97,7 @@ find_package(tf2 REQUIRED)
 find_package(tf2_ros REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
 find_package(microstrain_inertial_msgs REQUIRED)
+find_package(yaml-cpp REQUIRED)
 
 ###################################
 ## catkin specific configuration ##
@@ -147,6 +148,7 @@ set(LIB_SRC_FILES
   ${COMMON_SRC_DIR}/services.cpp
   ${COMMON_SRC_DIR}/config.cpp
 
+  ${COMMON_SRC_DIR}/utils/mappings/mip_mapping.cpp
   ${COMMON_SRC_DIR}/utils/mappings/mip_publisher_mapping.cpp
 
   ${COMMON_SRC_DIR}/utils/mip/ros_mip_device.cpp
@@ -226,6 +228,7 @@ endif()
 # Linking
 target_link_libraries(${PROJECT_NAME}
   mip
+  ${YAML_CPP_LIBRARIES}
   ${catkin_LIBRARIES}
 )
 target_link_libraries(${PROJECT_NAME}_node
