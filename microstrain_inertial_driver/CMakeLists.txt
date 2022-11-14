@@ -91,7 +91,6 @@ find_package(catkin REQUIRED COMPONENTS
   diagnostic_updater
   microstrain_inertial_msgs
 )
-find_package(yaml-cpp REQUIRED)
 
 ###################################
 ## catkin specific configuration ##
@@ -210,7 +209,6 @@ include_directories(${MSCL_INC_PATH} ${BOOST_INC_PATH})
 
 # Linking
 target_link_libraries(${PROJECT_NAME}
-  ${YAML_CPP_LIBRARIES}
   ${catkin_LIBRARIES}
   mip
 )

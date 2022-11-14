@@ -26,7 +26,6 @@
   <depend>nmea_msgs</depend>
   <depend>mavros_msgs</depend>
   <depend>tf2_geometry_msgs</depend>
-  <depend>yaml-cpp</depend>
   
   <depend>microstrain_inertial_msgs</depend>
 
