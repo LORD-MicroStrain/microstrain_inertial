@@ -97,7 +97,6 @@ find_package(tf2 REQUIRED)
 find_package(tf2_ros REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
 find_package(microstrain_inertial_msgs REQUIRED)
-find_package(yaml-cpp REQUIRED)
 
 ###################################
 ## catkin specific configuration ##
@@ -228,7 +227,6 @@ endif()
 # Linking
 target_link_libraries(${PROJECT_NAME}
   mip
-  ${YAML_CPP_LIBRARIES}
   ${catkin_LIBRARIES}
 )
 target_link_libraries(${PROJECT_NAME}_node
