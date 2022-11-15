@@ -9,28 +9,20 @@
 // 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////
-//
-// Include Files
-//
-/////////////////////////////////////////////////////////////////////////////////////////////////////
-
-#include <string>
-#include <algorithm>
 #include <time.h>
 #include <math.h>
-#include <vector>
 #include <stdlib.h>
-#include <ctime>
 
-#include "microstrain_inertial_driver/microstrain_inertial_driver.h"
+#include <ctime>
+#include <string>
+#include <vector>
+#include <algorithm>
+
 #include <tf2/LinearMath/Transform.h>
+
 #include "lifecycle_msgs/msg/transition.hpp"
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////
-// Initialization
-/////////////////////////////////////////////////////////////////////////////////////////////////////
+#include "microstrain_inertial_driver/microstrain_inertial_driver.h"
 
 namespace microstrain
 {
@@ -46,7 +38,7 @@ Microstrain::Microstrain() : rclcpp_lifecycle::LifecycleNode("ros2_mscl_node")
 #endif
 
   //Initialize the helper classes
-  if (!MicrostrainNodeBase::initialize(this))
+  if (!NodeCommon::initialize(this))
     RCLCPP_FATAL(this->get_logger(), "Failed to initialize base node");
 }
 
@@ -143,23 +135,17 @@ bool Microstrain::configure_node()
   try
   {
     RCLCPP_DEBUG(this->get_logger(), "Initializing base node");
-    if (!MicrostrainNodeBase::configure(this))
+    if (!NodeCommon::configure(this))
     {
       RCLCPP_ERROR(this->get_logger(), "Failed to configure node base");
       return false;
     }
   }
-  catch(const mscl::Error_Connection&)
-  {
-    RCLCPP_ERROR(this->get_logger(), "Error: Device Disconnected");
-    return false;
-  }
-  catch(const mscl::Error &e)
+  catch(const std::exception &e)
   {
     RCLCPP_ERROR(this->get_logger(), "Error: %s", e.what());
     return false;
   }
-
 
   return true;
 } 
@@ -172,100 +158,23 @@ bool Microstrain::configure_node()
 bool Microstrain::activate_node()
 {
   // Activate the base node to start the background tasks
-  if (!MicrostrainNodeBase::activate())
+  if (!NodeCommon::activate())
   {
     RCLCPP_ERROR(this->get_logger(), "Failed to activate base node");
     return false;
   }
 
   // Start a timer around a wrapper function to catch errors
-  main_parsing_timer_ = create_timer<Microstrain>(node_, timer_update_rate_hz_,
+  main_parsing_timer_ = createTimer<Microstrain>(node_, timer_update_rate_hz_,
       &Microstrain::parse_and_publish_main_wrapper, this);
-  device_status_timer_ = create_timer<Microstrain>(node_, 1.0,
-      &Microstrain::device_status_wrapper, this);
-
-  // Start a timer to log debug information if debug is enabled
-  if (config_.debug_)
-    log_debug_timer_ = create_timer<Microstrain>(node_, 1.0,
-        &Microstrain::logDeviceDebugInfo, this);
 
   // Start the aux timer if we were requested to do so
-  if (config_.supports_rtk_ && config_.publish_nmea_)
+  if (config_.publish_nmea_ && config_.aux_device_ != nullptr)
   {
     RCLCPP_INFO(this->get_logger(), "Starting aux port parsing");
-    aux_parsing_timer_ = create_timer<Microstrain>(node_, 2.0,
+    aux_parsing_timer_ = createTimer<Microstrain>(node_, 2.0,
         &Microstrain::parse_and_publish_aux_wrapper, this);
   }
-
-  //Activate publishers
-  if (publishers_.device_status_pub_)
-    publishers_.device_status_pub_->on_activate();
-
-  //IMU Publishers
-  if(publishers_.imu_pub_)
-    publishers_.imu_pub_->on_activate();
-   
-  if(publishers_.mag_pub_)
-    publishers_.mag_pub_->on_activate();
-
-  if(publishers_.gps_corr_pub_)
-    publishers_.gps_corr_pub_->on_activate();
- 
- 
-  //GNSS Publishers
-  for(int i=0; i< NUM_GNSS; i++)
-  {
-    if(publishers_.gnss_pub_[i])
-      publishers_.gnss_pub_[i]->on_activate();
-  
-    if(publishers_.gnss_odom_pub_[i])
-      publishers_.gnss_odom_pub_[i]->on_activate();
-
-    if(publishers_.gnss_time_pub_[i])
-      publishers_.gnss_time_pub_[i]->on_activate();
-
-    if(publishers_.gnss_aiding_status_pub_[i])
-      publishers_.gnss_aiding_status_pub_[i]->on_activate();
-
-    if(publishers_.gnss_fix_info_pub_[i])
-      publishers_.gnss_fix_info_pub_[i]->on_activate();
-  }
-
-  //RTK Data publishers
-  if(publishers_.rtk_pub_)
-    publishers_.rtk_pub_->on_activate();
-
-  if(publishers_.rtk_pub_v1_)
-    publishers_.rtk_pub_v1_->on_activate();
-  
-  //NMEA publisher
-  if (publishers_.nmea_sentence_pub_)
-    publishers_.nmea_sentence_pub_->on_activate();
-
-  //Filter Publishers
-  if(publishers_.filter_status_pub_)
-    publishers_.filter_status_pub_->on_activate();
-
-  if(publishers_.filter_heading_pub_)
-    publishers_.filter_heading_pub_->on_activate();
-
-  if(publishers_.filter_heading_state_pub_)
-    publishers_.filter_heading_state_pub_->on_activate();
-
-  if(publishers_.filter_pub_)
-    publishers_.filter_pub_->on_activate();
-
-  if(publishers_.filtered_imu_pub_)
-    publishers_.filtered_imu_pub_->on_activate();
-
-  if(publishers_.filter_relative_pos_pub_)
-    publishers_.filter_relative_pos_pub_->on_activate();
-  
-  if(publishers_.filter_aiding_measurement_summary_pub_)
-    publishers_.filter_aiding_measurement_summary_pub_->on_activate();
-
-  if(publishers_.gnss_dual_antenna_status_pub_)
-    publishers_.gnss_dual_antenna_status_pub_->on_activate();
   
   return true;
 }
@@ -277,76 +186,10 @@ bool Microstrain::activate_node()
 bool Microstrain::deactivate_node()
 {
   //Deactivate the base node
-  if (!MicrostrainNodeBase::deactivate())
+  if (!NodeCommon::deactivate())
   {
     RCLCPP_ERROR(this->get_logger(), "Unable to deactivate node base");
   }
-
-  //Deactivate publishers
-  if (publishers_.device_status_pub_)
-    publishers_.device_status_pub_->on_deactivate();
- 
-  //IMU Publishers
-  if(publishers_.imu_pub_)
-    publishers_.imu_pub_->on_deactivate();
-   
-  if(publishers_.mag_pub_)
-    publishers_.mag_pub_->on_deactivate();
-
-  if(publishers_.gps_corr_pub_)
-    publishers_.gps_corr_pub_->on_deactivate();
- 
- 
-  //GNSS Publishers
-  for(int i=0; i< NUM_GNSS; i++)
-  {
-    if(publishers_.gnss_pub_[i])
-      publishers_.gnss_pub_[i]->on_deactivate();
-  
-    if(publishers_.gnss_odom_pub_[i])
-      publishers_.gnss_odom_pub_[i]->on_deactivate();
-
-    if(publishers_.gnss_time_pub_[i])
-      publishers_.gnss_time_pub_[i]->on_deactivate();
-
-    if(publishers_.gnss_aiding_status_pub_[i])
-      publishers_.gnss_aiding_status_pub_[i]->on_deactivate();
-
-    if(publishers_.gnss_fix_info_pub_[i])
-      publishers_.gnss_fix_info_pub_[i]->on_deactivate();
-  }
-
-  //RTK Data publishers
-  if(publishers_.rtk_pub_)
-    publishers_.rtk_pub_->on_deactivate();
-
-  if(publishers_.rtk_pub_v1_)
-    publishers_.rtk_pub_v1_->on_deactivate();
-  
-  //Filter Publishers
-  if(publishers_.filter_status_pub_)
-    publishers_.filter_status_pub_->on_deactivate();
-
-  if(publishers_.filter_heading_pub_)
-    publishers_.filter_heading_pub_->on_deactivate();
-
-  if(publishers_.filter_heading_state_pub_)
-    publishers_.filter_heading_state_pub_->on_deactivate();
-
-  if(publishers_.filter_pub_)
-    publishers_.filter_pub_->on_deactivate();
-
-  if(publishers_.filtered_imu_pub_)
-    publishers_.filtered_imu_pub_->on_deactivate();
-
-  if(publishers_.filter_relative_pos_pub_)
-    publishers_.filter_relative_pos_pub_->on_deactivate();
-
-  if(publishers_.filter_aiding_measurement_summary_pub_)
-    publishers_.filter_aiding_measurement_summary_pub_->on_deactivate();
-
-  if(publishers_.gnss_dual_antenna_status_pub_)
-    publishers_.gnss_dual_antenna_status_pub_->on_deactivate();
 
   return true;
 }
@@ -359,77 +202,11 @@ bool Microstrain::deactivate_node()
 bool Microstrain::shutdown_or_cleanup_node()
 {
   //Shutdown the base node
-  if(!MicrostrainNodeBase::shutdown())
+  if(!NodeCommon::shutdown())
   {
     // Even though this is an error, don't return a failure on shutdown as it is not a fatal error
     RCLCPP_ERROR(this->get_logger(), "Failed to shutdown base node");
   }
-
-  //Release publishers
-  if (publishers_.device_status_pub_)
-    publishers_.device_status_pub_.reset();
-
-  //IMU Publishers
-  if(publishers_.imu_pub_)
-    publishers_.imu_pub_.reset();
-   
-  if(publishers_.mag_pub_)
-    publishers_.mag_pub_.reset();
-
-  if(publishers_.gps_corr_pub_)
-    publishers_.gps_corr_pub_.reset();
- 
- 
-  //GNSS Publishers
-  for(int i=0; i< NUM_GNSS; i++)
-  {
-    if(publishers_.gnss_pub_[i])
-      publishers_.gnss_pub_[i].reset();
-  
-    if(publishers_.gnss_odom_pub_[i])
-      publishers_.gnss_odom_pub_[i].reset();
-
-    if(publishers_.gnss_time_pub_[i])
-      publishers_.gnss_time_pub_[i].reset();
-
-    if(publishers_.gnss_aiding_status_pub_[i])
-      publishers_.gnss_aiding_status_pub_[i].reset();
-
-    if(publishers_.gnss_fix_info_pub_[i])
-      publishers_.gnss_fix_info_pub_[i].reset();
-  }
-
-  //RTK Data publishers
-  if(publishers_.rtk_pub_)
-    publishers_.rtk_pub_.reset();
-
-  if(publishers_.rtk_pub_v1_)
-    publishers_.rtk_pub_v1_.reset();
-  
-  //Filter Publishers
-  if(publishers_.filter_status_pub_)
-    publishers_.filter_status_pub_.reset();
-
-  if(publishers_.filter_heading_pub_)
-    publishers_.filter_heading_pub_.reset();
-
-  if(publishers_.filter_heading_state_pub_)
-    publishers_.filter_heading_state_pub_.reset();
-
-  if(publishers_.filter_pub_)
-    publishers_.filter_pub_.reset();
-
-  if(publishers_.filtered_imu_pub_)
-    publishers_.filtered_imu_pub_.reset();
-
-  if(publishers_.filter_relative_pos_pub_)
-    publishers_.filter_relative_pos_pub_.reset();
-
-  if(publishers_.filter_aiding_measurement_summary_pub_)
-    publishers_.filter_aiding_measurement_summary_pub_.reset();
-
-  if(publishers_.gnss_dual_antenna_status_pub_)
-    publishers_.gnss_dual_antenna_status_pub_.reset();
 
   return true;
 }
@@ -458,20 +235,6 @@ void Microstrain::parse_and_publish_aux_wrapper()
   catch (const std::exception& e)
   {
     RCLCPP_ERROR(this->get_logger(), "Error during aux processing: %s", e.what());
-    handle_exception();
-  }
-}
-
-void Microstrain::device_status_wrapper()
-{
-  // call the device status function in a try catch block so we can transition the state instead of crashing when an error happens
-  try
-  {
-    publishers_.publishDeviceStatus();
-  }
-  catch (const std::exception& e)
-  {
-    RCLCPP_ERROR(this->get_logger(), "Error during processing: %s", e.what());
     handle_exception();
   }
 }

@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="3">
   <name>microstrain_inertial_examples</name>
-  <version>2.7.0</version>
+  <version>2.7.1</version>
   <description>Example listener for Parker LORD Sensing inertial device driver ros_mscl (C++).</description>
   <maintainer email="rob.fisher@parker.com">Rob Fisher</maintainer>
   <maintainer email="melissa.gill@parker.com">Melissa Gill</maintainer>
