@@ -138,6 +138,7 @@ set(LIB_SRC_FILES
   ${COMMON_SRC_DIR}/services.cpp
   ${COMMON_SRC_DIR}/config.cpp
 
+  ${COMMON_SRC_DIR}/utils/mappings/mip_mapping.cpp
   ${COMMON_SRC_DIR}/utils/mappings/mip_publisher_mapping.cpp
 
   ${COMMON_SRC_DIR}/utils/mip/ros_mip_device.cpp
