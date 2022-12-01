@@ -54,7 +54,10 @@ time you pull changes you should pull with the `--recurse-submodules` flag, or a
 
 1. Install ROS and create a workspace: [Installing and Configuring Your ROS Environment](http://wiki.ros.org/ROS/Tutorials/InstallingandConfiguringROSEnvironment)
 
-2. Move the entire microstrain_inertial folder (microstrain_inertial_driver, microstrain_inertial_msgs , and microstrain_common for just source) to the your_workspace/src directory.
+2. Clone the repository into your workspace:
+    ```bash
+    git clone --recursive --branch ros https://github.com/LORD-MicroStrain/microstrain_inertial.git ~/your_workspace/src/microstrain_inertial
+    ```
 
 3. Install rosdeps for this package: `rosdep install --from-paths ~/your_workspace/src -i -r -y`
 
@@ -116,12 +119,9 @@ The easiest way to develop in docker while still using an IDE is to use VSCode a
     1. [VSCode](https://code.visualstudio.com/)
     1. [Docker](https://docs.docker.com/get-docker/)
 1. Open VSCode and install the following [plugins](https://code.visualstudio.com/docs/editor/extension-marketplace):
-    1. [VSCode Docker plugin](https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-docker)
     1. [VSCode Remote Containers plugin](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers)
-1. Open this directory in a container by following [this guide](https://code.visualstudio.com/docs/remote/containers#_quick-start-open-an-existing-folder-in-a-container)
-    1. Due to a bug in the remote container plugin, you will need to refresh the window once it comes up. To do this, type `Ctrl+Shift+p` and type `Reload Window` and hit enter. Note that this will have to be repeated every time the container is rebuilt
-1. Once the folder is open in VSCode, you can build the project by running `Ctrl+Shift+B` to trigger a build, or `Ctrl+p` to open quick open, then type `task build` and hit enter
-1. You can run the project by following [this guide](https://code.visualstudio.com/docs/editor/debugging)
+1. Open this directory in a container by opening the `microstrain_inertial` directory in VSCode, clicking the green `><` icon in the bottom left corner of the window, and choosing `Reopen In Container`
+1. Once the project is open in the container, it will take some time to automatically install the rosdeps inside the container, you can then build and run the container by following step 4 of [Building from source](#building-from-source)
 
 ### Make
 
@@ -131,7 +131,7 @@ directory can be used to build docker images, run a shell inside the docker imag
 1. Install the following dependencies:
     1. [Make](https://www.gnu.org/software/make/)
     1. [Docker](https://docs.docker.com/get-docker/)
-    1. [qemu-user-static](https://packages.ubuntu.com/bionic/qemu-user-static) (for multiarch builds)
+    1. [qemu-user-static](https://packages.ubuntu.com/bionic/qemu-user-static) (**only for multiarch builds**)
         1. Run the following command to register the qemu binaries with docker: `docker run --rm --privileged multiarch/qemu-user-static:register`
 
 The `Makefile` exposes the following tasks. They can all be run from the `.devcontainer` directory:
@@ -146,6 +146,13 @@ Both the `ros` and `ros2` branches share most of their code by using git submodu
 * [microstrain_inertial_driver_common](https://github.com/LORD-MicroStrain/microstrain_inertial_driver_common/tree/main) submoduled in this repo at `microstrain_inertial_driver/microstrain_inertial_driver_common`
 * [microstrain_inertial_msgs_common](https://github.com/LORD-MicroStrain/microstrain_inertial_msgs_common/tree/main) submoduled in this repo at `microstrain_inertial_msgs/microstrain_inertial_msgs_common`
 * [microstrain_inertial_rqt_common](https://github.com/LORD-MicroStrain/microstrain_inertial_rqt_common/tree/main) submoduled in this repo at `microstrain_inertial_rqt/microstrain_inertial_rqt_common`
+
+## Old versions
+
+Old versions of the driver were released as [tags](https://github.com/LORD-MicroStrain/microstrain_inertial/tags) on Github. They can also be found in specific branches:
+
+* [`ros-2.x.x`](https://github.com/LORD-MicroStrain/microstrain_inertial/tree/ros-2.x.x) contains the most recent code before the MIP SDK refactor
+* [`master`](https://github.com/LORD-MicroStrain/microstrain_inertial/tree/master) contains the most recent code before the common codebase refactor (prior to `2.0.0`)
 
 ## License
 
