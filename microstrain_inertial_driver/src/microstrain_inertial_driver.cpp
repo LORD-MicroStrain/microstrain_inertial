@@ -60,15 +60,13 @@ int Microstrain::run()
   }
 
   // Start the timers that will do the actual processing
-  main_parsing_timer_ = createTimer<NodeCommon>(&node, timer_update_rate_hz_,
-    &NodeCommon::parseAndPublishMain, this);
+  main_parsing_timer_ = createTimer<NodeCommon>(&node, timer_update_rate_hz_, &NodeCommon::parseAndPublishMain, this);
 
   // Start the aux timer if we were requested to do so
-  if (config_.publish_nmea_ && config_.aux_device_ != nullptr)
+  if (config_.aux_device_ != nullptr)
   {
     ROS_INFO("Starting aux port parsing");
-    aux_parsing_timer_ = createTimer<NodeCommon>(&node, 2.0,
-      &NodeCommon::parseAndPublishAux, this);
+    aux_parsing_timer_ = createTimer<NodeCommon>(&node, 2.0, &NodeCommon::parseAndPublishAux, this);
   }
 
   // Spin until we are shutdown
