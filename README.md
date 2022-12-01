@@ -4,19 +4,11 @@ Interface (driver) software, including ROS node, for the [Microstrain](https://m
 
 Implemented using the Microstrain Inertial Protocol SDK ([`mip_sdk`](https://github.com/LORD-MicroStrain/mip_sdk))
 
-### Important Branches
+## ROS vs ROS2 Versions
 
-There are two important branches that you may want to checkout:
-
-* [ros](https://github.com/LORD-MicroStrain/ROS-MSCL/tree/ros) -- Contains ROS1 implementation for this package
-* [ros2](https://github.com/LORD-MicroStrain/ROS-MSCL/tree/ros2) -- Contains ROS2 implementation for this package
+Note that this branch contains the ROS implementation for the packages. If you are looking for the ROS2 version, you should go to the [`ros2`](https://github.com/LORD-MicroStrain/ROS-MSCL/tree/ros2) branch
 
 ## Install Instructions
-
-### Docker
-
-As of `v2.2.2` the `microstrain_inertial_driver` is distributed as a docker image. More information on how to use the image can be found on [DockerHub](https://hub.docker.com/r/microstrain/ros-microstrain_inertial_driver)
-
 
 ### Buildfarm
 
@@ -33,6 +25,11 @@ sudo apt-get update && sudo apt-get install ros-ROS_DISTRO-microstrain-inertial-
 ```
 
 For more information on the ROS distros and platforms we support, please see [index.ros.org](https://index.ros.org/r/microstrain_inertial/github-LORD-MicroStrain-microstrain_inertial/#noetic)
+
+
+### Docker
+
+As of `v2.2.2` the `microstrain_inertial_driver` is distributed as a docker image. More information on how to use the image can be found on [DockerHub](https://hub.docker.com/r/microstrain/ros-microstrain_inertial_driver)
 
 
 ### Source
