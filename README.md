@@ -6,6 +6,7 @@ Implemented using the MicroStrain Inertial Protocol SDK ([`mip_sdk`](https://git
 
 ## Table of Contents
 
+* [ROS Wiki](#ros-wiki)
 * [ROS vs ROS2 versions](#ros-vs-ros2-versions)
 * [Packages](#packages)
 * [Install Instructions](#install-instructions)
@@ -22,6 +23,10 @@ Implemented using the MicroStrain Inertial Protocol SDK ([`mip_sdk`](https://git
 * [Shared Codebases](#shared-codebases)
 * [Previous Versions](#previous-versions)
 * [Licenses](#license)
+
+## ROS Wiki
+
+For more information on the data published and services available see our [ROS wiki](https://wiki.ros.org/microstrain_inertial_driver) page
 
 ## ROS vs ROS2 Versions
 
