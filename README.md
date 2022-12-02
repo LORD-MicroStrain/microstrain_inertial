@@ -1,49 +1,51 @@
 ## Description
 
-Interface (driver) software, including ROS node, for inertial sensors compatible with the [Microstrain Communication Library (MSCL)](https://github.com/LORD-MicroStrain/MSCL).
+Interface (driver) software, including ROS node, for the [MicroStrain](https://microstrain.com) line of inertial sensors from [Parker](http://parker.com), developed in Williston, VT.
 
-MSCL is developed by [LORD Sensing - Microstrain](http://microstrain.com) in Williston, VT. 
+Implemented using the MicroStrain Inertial Protocol SDK ([`mip_sdk`](https://github.com/LORD-MicroStrain/mip_sdk))
 
-## Different Codebases
+## Table of Contents
 
-This repo is now structured differently as of `2.0.0`.
+* [ROS Wiki](#ros-wiki)
+* [ROS vs ROS2 versions](#ros-vs-ros2-versions)
+* [Packages](#packages)
+* [Install Instructions](#install-instructions)
+    * [Buildfarm](#buildfarm)
+    * [Docker](#docker)
+    * [Source](#source)
+* [Building From Source](#building-from-source)
+* [Run Instructions](#run-instructions)
+    * [Single Device](#launch-the-node-and-publish-data)
+    * [Multiple Devices](#publish-data-from-two-devices-simultaneously)
+* [Docker Development](#docker-development)
+    * [VSCode](#vscode)
+    * [Make](#make)
+* [Shared Codebases](#shared-codebases)
+* [Previous Versions](#previous-versions)
+* [Licenses](#license)
 
-#### Important Branches
-There are three important branches that you may want to checkout:
+## ROS Wiki
 
-* [ros](https://github.com/LORD-MicroStrain/ROS-MSCL/tree/ros) -- Contains ROS1 implementation for this node as of `2.0.0`. This version is being actively updated and supported
-* [ros2](https://github.com/LORD-MicroStrain/ROS-MSCL/tree/ros2) -- Contains ROS2 implementation for this node as of `2.0.0`. This version is being actively updated and supported
-* [master](https://github.com/LORD-MicroStrain/ROS-MSCL/tree/master) -- Contains the most recent ROS1 changes before the transition to `2.0.0`. Kept for backwards compatibility, but no longer updated or supported
+For more information on the data published and services available see our [ROS wiki](https://wiki.ros.org/microstrain_inertial_driver) page
 
-Both the `ros` and `ros2` branches share most of their code by using gis submodules. The following submodules contain most of the actual implementations:
+## ROS vs ROS2 Versions
 
-* [microstrain_inertial_driver_common](https://github.com/LORD-MicroStrain/microstrain_inertial_driver_common/tree/main) submoduled in this repo at `microstrain_inertial_driver/microstrain_inertial_driver_common`
-* [microstrain_inertial_msgs_common](https://github.com/LORD-MicroStrain/microstrain_inertial_msgs_common/tree/main) submoduled in this repo at `microstrain_inertial_msgs/microstrain_inertial_msgs_common`
-* [microstrain_inertial_rqt_common](https://github.com/LORD-MicroStrain/microstrain_inertial_rqt_common/tree/main) submoduled in this repo at `microstrain_inertial_rqt/microstrain_inertial_rqt_common`
+Note that this branch contains the ROS2 implementation for the packages. If you are looking for the ROS version, you should go to the [`ros`](https://github.com/LORD-MicroStrain/ROS-MSCL/tree/ros) branch
 
-#### Different Package Names
+## Packages
 
-Prior to version `2.0.0`, this repo contained the following ROS packages:
-* `ros_mscl` -- ROS node that will communicate with the devices
-* `mscl_msgs` -- Collection of messages produced by the `ros_mscl` node
-* `ros_mscl_cpp_example` -- Simple subscriber written in C++ that will consume a message produced by `ros_mscl`
-* `ros_mscl_py_example` -- Simple subscriber written in Python that will consume a message produced by `ros_mscl`
+This repo contains the following packages:
 
-Due to requirements laid out by the ROS maintainers [here](https://www.ros.org/reps/rep-0144.html), as of version `2.0.0`, this repo contains the following ROS packages:
-* `microstrain_inertial_driver` -- ROS node that will communicate with the devices
-* `microstrain_inertial_msgs` -- Collection of messages produced by the `microstrain_inertial_driver` node
-* `microstrain_inertial_examples` -- Collection of examples that show how to interact with the `microstrain_inertial_driver` node. Currently contains one simple C++ and python subscriber node
-* `microstrain_inertial_rqt` -- Collection of RQT plugins to view the status of inertial devices when running the `microstrain_inertial_driver`
+* [`microstrain_inertial_driver`](./microstrain_inertial_driver) -- ROS node that will communicate with the devices
+* [`microstrain_inertial_msgs`](./microstrain_inertial_msgs) -- Collection of messages produced by the `microstrain_inertial_driver` node
+* [`microstrain_inretial_examples`](./microstrain_inertial_examples) -- Collection of examples that show how to interact with the `microstrain_inertial_driver` node. Currently contains one simple C++ and python subscriber node
+* [`microstrain_inertial_rqt`](./microstrain_inertial_rqt) -- Collection of RQT plugins to view the status of inertial devices when running the `microstrain_inertial_driver`
 
-## Build Instructions
-
-### Docker
-
-As of `v2.2.0` the `microstrain_inertial_driver` is distributed as a docker image. More information on how to use the image can be found on [DockerHub](https://hub.docker.com/r/microstrain/ros-microstrain_inertial_driver)
+## Install Instructions
 
 ### Buildfarm
 
-As of `v2.0.6` this package is being built and distributed by the ROS build farm. If you do not need to modify the source, it is recommended to install directly from the buildfarm by running the following commands where `ROS_DISTRO` is the version of ROS you are using such as `foxy` or `galactic`:
+As of `v2.0.5` this package is being built and distributed by the ROS build farm. If you do not need to modify the source, it is recommended to install directly from the buildfarm by running the following commands where `ROS_DISTRO` is the version of ROS you are using such as `galactic` or `humnble`:
 
 Driver:
 ```bash
@@ -55,93 +57,129 @@ RQT:
 sudo apt-get update && sudo apt-get install ros-ROS_DISTRO-microstrain-inertial-rqt
 ```
 
-For more information on the ROS distros and platforms we support, please see [index.ros.org](https://index.ros.org/r/microstrain_inertial/github-LORD-MicroStrain-microstrain_inertial/#galactic)
+For more information on the ROS distros and platforms we support, please see [index.ros.org](https://index.ros.org/r/microstrain_inertial/github-LORD-MicroStrain-microstrain_inertial/#humble)
+
+
+### Docker
+
+As of `v2.2.2` the `microstrain_inertial_driver` is distributed as a docker image. More information on how to use the image can be found on [DockerHub](https://hub.docker.com/r/microstrain/ros-microstrain_inertial_driver).
+
+If you are interested in working on the node in a docker container, see the [Docker Development](#docker-development) section.
 
 
 ### Source
 
-If you need to modify the source of this repository, or are running on a platform that we do not support, you can build from source by following these instructions
+If you need to modify the source of this repository, or are running on a platform that we do not support, you can build from source by following the [Building From Source](#building-from-source) guide below.
 
-#### Submoduels
-This repo now takes advantage of git submodules in order to share code between ROS versions. When cloning the repo, you should clone with the `--recursive` flag to get all of the submodules.
 
-If you have already cloned the repo, you can checkout the submodules by running `git submodule init && git submodule update --recursive` from the project directory
+#### **IMPORTANT NOTE ABOUT CLONING**
+
+This repo takes advantage of git submodules in order to share code between ROS versions. When cloning the repo, you should clone with the `--recursive` flag to get all of the submodules.
+
+If you have already cloned the repo, you can checkout the submodules by running `git submodule update --init --recursive` from the project directory
 
 The [CMakeLists.txt](./microstrain_inertial_msgs/CMakeLists.txt) will automatically checkout the submodule if it does not exist, but it will not keep it up to date. In order to keep up to date, every
 time you pull changes you should pull with the `--recurse-submodules` flag, or alternatively run `git submodule update --recursive` after you have pulled changes
 
-#### MSCL
-MSCL is now installed in the [CMakeLists.txt](./microstrain_inertial_driver/CMakeLists.txt). The version installed can be changed by passing the flag `-DMSCL_VERSION="62.1.2"`
 
-If you already have MSCL installed and want to use your installed version instead of the one automatically downloaded, you can specify the location by passing the flag `-DMSCL_DIR=/usr/share/c++-mscl`
+## Building from source
 
-We do our best to keep ROS-MSCL up-to-date with the latest MSCL changes, but sometimes there is a delay. The currently supported version of MSCL is [v62.1.2](https://github.com/LORD-MicroStrain/MSCL/releases/tag/v62.1.2)
-
-#### Building from source
 1. Install ROS2 and create a workspace: [Configuring Your ROS2 Environment](https://docs.ros.org/en/foxy/Tutorials/Configuring-ROS2-Environment.html)
 
-2. Move the entire microstrain_inertial folder (microstrain_inertial_driver, and microstrain_inertial_msgs) to the your_workspace/src directory.
+2. Clone the repository into your workspace:
+    ```bash
+    git clone --recursive --branch ros2 https://github.com/LORD-MicroStrain/microstrain_inertial.git ~/your_workspace/src/microstrain_inertial
+    ```
 
-3. Locate and register the microstrain_inertial_driver package: `rospack find microstrain_inertial_driver`
+3. Install rosdeps for this package: `rosdep install --from-paths ~/your_workspace/src -i -r -y`
 
-4. Install rosdeps for this package: `rosdep install --from-paths ~/your_workspace/src --ignore-src -r -y`
+4. Build your workspace:
 
-5. Build your workspace:
-        
-        cd ~/your_workspace
-        colcon build
-        source ~/your_workspace/install/setup.bash
-   The source command may need to be run in each terminal prior to launching a ROS node.
+    ```bash        
+    cd ~/your_workspace
+    colcon build
+    source ~/your_workspace/install/setup.bash
+    ```
+   The source command will need to be run in each terminal prior to launching a ROS node.
+
+## Run Instructions
+
 #### Launch the node and publish data
 The following command will launch the driver. Keep in mind each instance needs to be run in a separate terminal.
-            
-        ros2 launch microstrain_inertial_driver microstrain_launch.py
+```bash
+roslaunch microstrain_inertial_driver microstrain.launch
+```
 
-This driver is implemented as a lifecycle node.  Upon running, the node will be in the unconfigured state and no interaction has occurred with the device.  The node must be transitioned as follows for data to be available:
+The node has some optional launch parameters that can be specified from the command line in the format `param:=value`
+- `namespace` : namespace that the driver will run in. All services and publishers will be prepended with this, default: `/`
+- `node_name` : name of the driver, default: `microstrain_inertial_driver`
+- `debug`     : output debug logs, default: `false`
+- `params_file` : path to a parameter file to override the default parameters stored in [`params.yml`](./microstrain_inertial_driver/microstrain_inertial_driver_common/config/params.yml), default: [`empty.yml`](./microstrain_inertial_driver/config/empty.yml)
+- `configure` : If set to the exact string `true` the driver will automatically transition into the configure state.
+- `activate`  : If set to the exact string `true` the driver will automatically transition into the activate state.
+    
+#### Publish data from two devices simultaneously  
 
-- transition to configure state: 
+1. Create the following files somewhere on your system (we will assume they are stored in the `~` directory):
+    1. `~/sensor_a_params.yml` with the contents:
+        ```yaml
+        port: /dev/ttyACM0
+        ```
+    2. `~/sensor_b_params.yml` with the contents:
+        ```yaml
+        port: /dev/ttyACM1
+        ```
+2. In two different terminals:
+    ```bash    
+    roslaunch microstrain_inertial_driver microstrain.launch node_name:=sensor_a_node namespace:=sensor_a params_file:="~/sensor_a_params.yml"
+    ```
+    ```bash    
+    roslaunch microstrain_inertial_driver microstrain.launch node_name:=sensor_b_node namespace:=sensor_b params_file:="~/sensor_b_params.yml"
+    ```
 
-    ros2 lifecycle set /gx5/microstrain_inertial_driver_node configure
+This will launch two nodes that publish data to different namespaces:
+- `/sensor_a`, connected over port: `/dev/ttyACM0`
+- `/sensor_b`, connected over port: `/dev/ttyACM1`
 
-- transition to active state: 
+An example subscriber node can be found in the [MicroStrain Examples](./microstrain_inertial_examples) package.
 
-    ros2 lifecycle set /gx5/microstrain_inertial_driver_node activate
+#### Lifecycle Node
+
+This driver is implemented as a lifecycle node. Upon running, the node will be in the unconfigured state and no interaction has occurred with the device.
+
+You may automatically configure and activate the node on startup using the `configure` and `activate` [arguments](#launch-the-node-and-publish-data) to the launch file.
+
+The node may be transitioned anytime after startup using the following commands (note that the `namespace` and `name` parameters will affect the node name in the following commands):
+
+- Transition to configure state: 
+    ```bash
+    ros2 lifecycle set /microstrain_inertial_driver_node configure
+    ```
+
+- Transition to active state: 
+
+    ```bash
+    ros2 lifecycle set /microstrain_inertial_driver_node activate
+    ```
 
 You can stop data from streaming by putting the device into the "deactivate" state.  Both the "cleanup" and "shutdown" states will disconnect from the device and close the raw data log file (if enabled.)
-
-To check published topics:
-        
-    ros2 topic list
-
-**Example**: Connect to and publish data from two devices simultaneously  
-In two different terminals:
-    
-    ros2 launch microstrain_inertial_driver microstrain.launch name:=sensor1234
-
-    ros2 launch microstrain_inertial_driver microstrain.launch name:=bestSensor port:=/dev/ttyACM1
-This will launch two nodes that publish data to different namespaces:
-- sensor1234, connected over port: /dev/ttyACM0
-- bestSensor, connected over port: /dev/ttyACM1
-
-An example subscriber node can be found here: [Microstrain Examples](./microstrain_inertial_examples)  
-
 
 ## Docker Development
 
 ### VSCode
 
-The easiest way to develop in docker while still using an IDE is to use VSCode as an IDE. Follow the steps below to develop on this repo in a docker container
+The easiest way to develop in docker while still using an IDE is to use VSCode. Follow the steps below to develop on this repo in a docker container.
 
 1. Install the following dependencies:
     1. [VSCode](https://code.visualstudio.com/)
     1. [Docker](https://docs.docker.com/get-docker/)
 1. Open VSCode and install the following [plugins](https://code.visualstudio.com/docs/editor/extension-marketplace):
-    1. [VSCode Docker plugin](https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-docker)
     1. [VSCode Remote Containers plugin](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers)
-1. Open this directory in a container by following [this guide](https://code.visualstudio.com/docs/remote/containers#_quick-start-open-an-existing-folder-in-a-container)
-    1. Due to a bug in the remote container plugin, you will need to refresh the window once it comes up. To do this, type `Ctrl+Shift+p` and type `Reload Window` and hit enter. Note that this will have to be repeated every time the container is rebuilt
-1. Once the folder is open in VSCode, you can build the project by running `Ctrl+Shift+B` to trigger a build, or `Ctrl+p` to open quick open, then type `task build` and hit enter
-1. You can run the project by following [this guide](https://code.visualstudio.com/docs/editor/debugging)
+1. Open this directory in a container:
+    1. Open the `microstrain_inertial` directory in VSCode
+    1. Click the green `><` icon in the bottom left corner of the window
+    1. Choose `Reopen In Container`
+1. Once the project is open in the container, it will take some time to automatically install the rosdeps inside the container, you can then build and run the container by following step 4 of [Building from source](#building-from-source)
 
 ### Make
 
@@ -151,7 +189,7 @@ directory can be used to build docker images, run a shell inside the docker imag
 1. Install the following dependencies:
     1. [Make](https://www.gnu.org/software/make/)
     1. [Docker](https://docs.docker.com/get-docker/)
-    1. [qemu-user-static](https://packages.ubuntu.com/bionic/qemu-user-static) (for multiarch builds)
+    1. [qemu-user-static](https://packages.ubuntu.com/bionic/qemu-user-static) (**only for multiarch builds**)
         1. Run the following command to register the qemu binaries with docker: `docker run --rm --privileged multiarch/qemu-user-static:register`
 
 The `Makefile` exposes the following tasks. They can all be run from the `.devcontainer` directory:
@@ -159,9 +197,23 @@ The `Makefile` exposes the following tasks. They can all be run from the `.devco
 * `make image` - Builds the runtime image that contains only the required dependencies and the ROS node.
 * `make clean` - Cleans up after the above two tasks
 
+## Shared codebases
+
+Both the `ros` and `ros2` branches share most of their code by using git submodules. The following submodules contain most of the actual implementations:
+
+* [microstrain_inertial_driver_common](https://github.com/LORD-MicroStrain/microstrain_inertial_driver_common/tree/main) submoduled in this repo at `microstrain_inertial_driver/microstrain_inertial_driver_common`
+* [microstrain_inertial_msgs_common](https://github.com/LORD-MicroStrain/microstrain_inertial_msgs_common/tree/main) submoduled in this repo at `microstrain_inertial_msgs/microstrain_inertial_msgs_common`
+* [microstrain_inertial_rqt_common](https://github.com/LORD-MicroStrain/microstrain_inertial_rqt_common/tree/main) submoduled in this repo at `microstrain_inertial_rqt/microstrain_inertial_rqt_common`
+
+## Previous Versions
+
+Previous versions of the driver were released as [tags](https://github.com/LORD-MicroStrain/microstrain_inertial/tags) on Github. They can also be found in specific branches:
+
+* [`ros2-2.x.x`](https://github.com/LORD-MicroStrain/microstrain_inertial/tree/ros2-2.x.x) contains the most recent code before the MIP SDK refactor
+
 ## License
 
-Different packages in this repo are releasd under different licenses. For more information, see the LICENSE files in each of the package directories.
+Different packages in this repo are released under different licenses. For more information, see the LICENSE files in each of the package directories.
 
 Here is a quick overview of the licenses used in each package:
 
