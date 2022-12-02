@@ -251,3 +251,9 @@ get_target_property(ROSLINT_SOURCES ${PROJECT_NAME} SOURCES)
 roslint_cpp(${ROSLINT_SOURCES})
 
 roslint_add_test()
+
+# Make sure that the wiki document is up to date
+add_test(
+  NAME wiki_publishers
+  COMMAND ${CMAKE_COMMAND} -E env ${COMMON_DIR}/tools/check-wiki-publishers.sh
+)
