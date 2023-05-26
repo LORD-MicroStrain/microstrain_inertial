@@ -33,13 +33,13 @@ endif()
 set(SRV_DIR "${COMMON_DIR}/srv")
 FILE(GLOB SRV_FILES RELATIVE "${SRV_DIR}"
     "${SRV_DIR}/*.srv")
-list(TRANSFORM SRV_FILES PREPEND ${COMMON_DIR}/srv:)
+list(TRANSFORM SRV_FILES PREPEND ${COMMON_DIR}:srv/)
 
 # Generate Message Files
 set(MSG_DIR "${COMMON_DIR}/msg")
 FILE(GLOB MSG_FILES RELATIVE "${MSG_DIR}"
     "${MSG_DIR}/*.msg")
-list(TRANSFORM MSG_FILES PREPEND ${COMMON_DIR}/msg:)
+list(TRANSFORM MSG_FILES PREPEND ${COMMON_DIR}:msg/)
 
 rosidl_generate_interfaces(${PROJECT_NAME} ${MSG_FILES} ${SRV_FILES} DEPENDENCIES std_msgs geometry_msgs)
 
