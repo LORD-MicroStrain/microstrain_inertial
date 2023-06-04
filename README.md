@@ -107,7 +107,7 @@ time you pull changes you should pull with the `--recurse-submodules` flag, or a
 #### Launch the node and publish data
 The following command will launch the driver. Keep in mind each instance needs to be run in a separate terminal.
 ```bash
-roslaunch microstrain_inertial_driver microstrain.launch
+ros2 launch microstrain_inertial_driver microstrain_launch.py
 ```
 
 The node has some optional launch parameters that can be specified from the command line in the format `param:=value`
@@ -131,10 +131,10 @@ The node has some optional launch parameters that can be specified from the comm
         ```
 2. In two different terminals:
     ```bash    
-    roslaunch microstrain_inertial_driver microstrain.launch node_name:=sensor_a_node namespace:=sensor_a params_file:="~/sensor_a_params.yml"
+    ros2 launch microstrain_inertial_driver microstrain_launch.py node_name:=sensor_a_node namespace:=sensor_a params_file:="~/sensor_a_params.yml"
     ```
     ```bash    
-    roslaunch microstrain_inertial_driver microstrain.launch node_name:=sensor_b_node namespace:=sensor_b params_file:="~/sensor_b_params.yml"
+    ros2 launch microstrain_inertial_driver microstrain_launch.py node_name:=sensor_b_node namespace:=sensor_b params_file:="~/sensor_b_params.yml"
     ```
 
 This will launch two nodes that publish data to different namespaces:
