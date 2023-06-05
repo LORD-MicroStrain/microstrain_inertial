@@ -80,7 +80,7 @@ find_package(catkin REQUIRED COMPONENTS
   geometry_msgs
   nav_msgs
   nmea_msgs
-  mavros_msgs
+  rtcm_msgs
   roscpp
   sensor_msgs
   std_msgs
@@ -116,7 +116,7 @@ catkin_package(
     sensor_msgs
     nav_msgs
     nmea_msgs
-    mavros_msgs
+    rtcm_msgs
     message_runtime
     microstrain_inertial_msgs
 )
