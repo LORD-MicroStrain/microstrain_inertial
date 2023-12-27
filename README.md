@@ -97,7 +97,7 @@ time you pull changes you should pull with the `--recurse-submodules` flag, or a
 
     ```bash        
     cd ~/your_workspace
-    colcon build
+    colcon build --packages-up-to microstrain_inertial_driver
     source ~/your_workspace/install/setup.bash
     ```
    The source command will need to be run in each terminal prior to launching a ROS node.
@@ -117,68 +117,68 @@ The node has some optional launch parameters that can be specified from the comm
 - `params_file` : path to a parameter file to override the default parameters stored in [`params.yml`](./microstrain_inertial_driver/microstrain_inertial_driver_common/config/params.yml), default: [`empty.yml`](./microstrain_inertial_driver/config/empty.yml)
 - `configure` : If set to the exact string `true` the driver will automatically transition into the configure state.
 - `activate`  : If set to the exact string `true` the driver will automatically transition into the activate state.
-    
+
 #### Publish data from two devices simultaneously  
 
 1. Create the following files somewhere on your system (we will assume they are stored in the `~` directory):
-    1. `~/sensor_a_params.yml` with the contents:
-        ```yaml
-        port: /dev/ttyACM0
-        ```
-    2. `~/sensor_b_params.yml` with the contents:
-        ```yaml
-        port: /dev/ttyACM1
-        ```
-2. In two different terminals:
-    ```bash    
-    ros2 launch microstrain_inertial_driver microstrain_launch.py node_name:=sensor_a_node namespace:=sensor_a params_file:="~/sensor_a_params.yml"
-    ```
-    ```bash    
-    ros2 launch microstrain_inertial_driver microstrain_launch.py node_name:=sensor_b_node namespace:=sensor_b params_file:="~/sensor_b_params.yml"
-    ```
+	1. `~/sensor_a_params.yml` with the contents:
+	```yaml
+	port: /dev/ttyACM0
+	```
+	2. `~/sensor_b_params.yml` with the contents:
+	```yaml
+	port: /dev/ttyACM1
+	```
+	2. In two different terminals:
+	```bash    
+	ros2 launch microstrain_inertial_driver microstrain_launch.py node_name:=sensor_a_node namespace:=sensor_a params_file:="~/sensor_a_params.yml"
+	```
+	```bash    
+	ros2 launch microstrain_inertial_driver microstrain_launch.py node_name:=sensor_b_node namespace:=sensor_b params_file:="~/sensor_b_params.yml"
+	```
 
-This will launch two nodes that publish data to different namespaces:
-- `/sensor_a`, connected over port: `/dev/ttyACM0`
-- `/sensor_b`, connected over port: `/dev/ttyACM1`
+	This will launch two nodes that publish data to different namespaces:
+	- `/sensor_a`, connected over port: `/dev/ttyACM0`
+	- `/sensor_b`, connected over port: `/dev/ttyACM1`
 
-An example subscriber node can be found in the [MicroStrain Examples](./microstrain_inertial_examples) package.
+	An example subscriber node can be found in the [MicroStrain Examples](./microstrain_inertial_examples) package.
 
 #### Lifecycle Node
 
-This driver is implemented as a lifecycle node. Upon running, the node will be in the unconfigured state and no interaction has occurred with the device.
+	This driver is implemented as a lifecycle node. Upon running, the node will be in the unconfigured state and no interaction has occurred with the device.
 
-You may automatically configure and activate the node on startup using the `configure` and `activate` [arguments](#launch-the-node-and-publish-data) to the launch file.
+	You may automatically configure and activate the node on startup using the `configure` and `activate` [arguments](#launch-the-node-and-publish-data) to the launch file.
 
-The node may be transitioned anytime after startup using the following commands (note that the `namespace` and `name` parameters will affect the node name in the following commands):
+	The node may be transitioned anytime after startup using the following commands (note that the `namespace` and `name` parameters will affect the node name in the following commands):
 
-- Transition to configure state: 
-    ```bash
-    ros2 lifecycle set /microstrain_inertial_driver_node configure
-    ```
+		- Transition to configure state: 
+		```bash
+		ros2 lifecycle set /microstrain_inertial_driver_node configure
+		```
 
-- Transition to active state: 
+		- Transition to active state: 
 
-    ```bash
-    ros2 lifecycle set /microstrain_inertial_driver_node activate
-    ```
+		```bash
+		ros2 lifecycle set /microstrain_inertial_driver_node activate
+		```
 
-You can stop data from streaming by putting the device into the "deactivate" state.  Both the "cleanup" and "shutdown" states will disconnect from the device and close the raw data log file (if enabled.)
+		You can stop data from streaming by putting the device into the "deactivate" state.  Both the "cleanup" and "shutdown" states will disconnect from the device and close the raw data log file (if enabled.)
 
 ## Docker Development
 
 ### VSCode
 
-The easiest way to develop in docker while still using an IDE is to use VSCode. Follow the steps below to develop on this repo in a docker container.
+		The easiest way to develop in docker while still using an IDE is to use VSCode. Follow the steps below to develop on this repo in a docker container.
 
-1. Install the following dependencies:
-    1. [VSCode](https://code.visualstudio.com/)
-    1. [Docker](https://docs.docker.com/get-docker/)
-1. Open VSCode and install the following [plugins](https://code.visualstudio.com/docs/editor/extension-marketplace):
-    1. [VSCode Remote Containers plugin](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers)
-1. Open this directory in a container:
-    1. Open the `microstrain_inertial` directory in VSCode
-    1. Click the green `><` icon in the bottom left corner of the window
-    1. Choose `Reopen In Container`
+		1. Install the following dependencies:
+		1. [VSCode](https://code.visualstudio.com/)
+		1. [Docker](https://docs.docker.com/get-docker/)
+		1. Open VSCode and install the following [plugins](https://code.visualstudio.com/docs/editor/extension-marketplace):
+		1. [VSCode Remote Containers plugin](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers)
+		1. Open this directory in a container:
+		1. Open the `microstrain_inertial` directory in VSCode
+		1. Click the green `><` icon in the bottom left corner of the window
+	1. Choose `Reopen In Container`
 1. Once the project is open in the container, it will take some time to automatically install the rosdeps inside the container, you can then build and run the container by following step 4 of [Building from source](#building-from-source)
 
 ### Make
