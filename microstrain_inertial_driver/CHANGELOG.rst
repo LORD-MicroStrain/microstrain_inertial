@@ -2,6 +2,19 @@
 Changelog for package microstrain_inertial_driver
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+3.2.0 (2023-12-21)
+------------------
+* Updates submodule with GNSS signal configuration options (`#288 <https://github.com/LORD-MicroStrain/microstrain_inertial/issues/288>`_)
+* Contributors: Rob
+
+3.1.0 (2023-07-25)
+------------------
+* Adds several PRs from submodule (`#263 <https://github.com/LORD-MicroStrain/microstrain_inertial/issues/263>`_)
+* Updates submodule to fix TF warning (`#262 <https://github.com/LORD-MicroStrain/microstrain_inertial/issues/262>`_)
+* ROS Turns on antenna calibration by default, and publishes the amount corrected by (`#237 <https://github.com/LORD-MicroStrain/microstrain_inertial/issues/237>`_)
+* Feature/ros relative position base station (`#235 <https://github.com/LORD-MicroStrain/microstrain_inertial/issues/235>`_)
+* Contributors: Rob
+
 3.0.1 (2023-02-10)
 ------------------
 * Publishes after every packet to fix lower data rate problem (`#229 <https://github.com/LORD-MicroStrain/microstrain_inertial/issues/229>`_)
