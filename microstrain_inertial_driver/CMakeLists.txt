@@ -267,3 +267,17 @@ add_test(
   NAME wiki_publishers
   COMMAND ${CMAKE_COMMAND} -E env ${COMMON_DIR}/tools/check-wiki-publishers.sh
 )
+add_test(
+  NAME wiki_services
+  COMMAND ${CMAKE_COMMAND} -E env ${COMMON_DIR}/tools/check-wiki-services.sh
+)
+add_test(
+  NAME wiki_subscribers
+  COMMAND ${CMAKE_COMMAND} -E env ${COMMON_DIR}/tools/check-wiki-subscribers.sh
+)
+
+# Make the ROS tests target run our tests as well
+if (BUILD_TESTING)
+  add_custom_target(custom_tests COMMAND ${CMAKE_CTEST_COMMAND})
+  add_dependencies(run_tests custom_tests)
+endif()
