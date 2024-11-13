@@ -122,7 +122,12 @@ The node has some optional launch parameters that can be specified from the comm
 - `namespace` : namespace that the driver will run in. All services and publishers will be prepended with this, default: `/`
 - `node_name` : name of the driver, default: `microstrain_inertial_driver`
 - `debug`     : output debug logs, default: `false`
-- `params_file` : path to a parameter file to override the default parameters stored by default in: [`empty.yml`](./microstrain_inertial_driver/config/empty.yml)
+- `params_file` : path to a parameter file to override the default parameters stored in [`params.yml`](https://github.com/LORD-MicroStrain/microstrain_inertial_driver_common/blob/main/config/params.yml), default: [`empty.yml`](./microstrain_inertial_driver/config/empty.yml)
+
+> [!NOTE]
+> The example [`params.yml`](https://github.com/LORD-MicroStrain/microstrain_inertial_driver_common/blob/main/config/params.yml) file is formatted to work with ROS and will not work if specified as the params_file argument in ROS2.
+>
+> If you want to override parameters for ROS2, start with [`empty.yml`](./microstrain_inertial_driver/config/empty.yml).
     
 #### Publish data from two devices simultaneously  
 
