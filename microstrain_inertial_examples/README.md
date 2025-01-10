@@ -12,6 +12,8 @@ Collection of simple examples to get started using the `microstrain_inertial_dri
     * [GX5-GNSS / CX5-GNSS](#gx5-gnss--cx5-gnss)
     * [GX5-AHRS / CX5-AHRS](#gx5-ahrs--cx5-ahrs)
     * [GX5-AR / CX5-AR](#gx5-ar--cx5-ar)
+* [Other Examples](#other-examples)
+    * [CV7-INS / GV7-INS with NMEA over aux](#cv7-ins--gv7-ins-with-nmea-over-aux-port)
 
 ## Common Steps
 
@@ -156,3 +158,30 @@ This example contains the following files:
 * [`launch/gx5_15_launch.py`](./launch/gx5_15_launch.py)
 * [`config/gx5_15/gx5_15.yml`](./config/gx5_15/gx5_15.yml)
 * [`config/gx5_15/display.rviz`](./config/gx5_15/display.rviz)
+
+## Other Examples
+
+Other assorted examples users may find useful
+
+### CV7-INS / GV7-INS with NMEA over aux port
+
+**NOTE**: This example works for the [3DM-CV7-INS](https://www.microstrain.com/inertial-sensors/3DM-CV7-INS), and
+[3DM-GV7-INS](https://www.microstrain.com/inertial-sensors/3DM-GV7-INS) and requires an external GNSS receiver such as the
+[SparkFun ZED-F9P](https://www.sparkfun.com/products/16481?gad_source=1&gclid=CjwKCAjwps-zBhAiEiwALwsVYTSItzsET_3hKDL1FDr5R1byfLifyTtszQVOrpOVjDAC2XtMhd6FwxoCXjEQAvD_BwE)
+
+This example is similar to the [CV7-INS / GV7-INS](#cv7-ins--gv7-ins), but instead of getting the data over the ROS network,
+the data will be provided by GPIO pins setup as an "aux" port on the device. This example follows the wiring setup provided in
+the [NMEA Input](https://mip-documentation-test.s3.ca-central-1.amazonaws.com/CV7-INS+Online/user_manual_content/additional_features/NMEA%20Input.htm)
+page on the MicroStrain manual.
+
+To run this example, run the following command after doing the [common steps](#common-steps):
+
+```bash
+ros2 launch microstrain_inertial_examples cv7_ins_nmea_aux_launch.py
+```
+
+This example contains the following files:
+
+* [`launch/cv7_ins_nmea_aux_launch.py`](./launch/cv7_ins_nmea_aux_launch.py)
+* [`config/cv7_ins_nmea_aux/cv7_ins.yml`](./config/cv7_ins_nmea_aux/cv7_ins.yml)
+* [`config/cv7_ins_nmea_aux/display.rviz`](./config/cv7_ins_nmea_aux/display.rviz)

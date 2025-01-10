@@ -2,6 +2,30 @@
 Changelog for package microstrain_inertial_driver
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+4.5.0 (2024-11-07)
+------------------
+* ROS submodule update 11 07 2024 (`#363 <https://github.com/LORD-MicroStrain/microstrain_inertial/issues/363>`_)
+* Contributors: Rob
+
+4.4.0 (2024-10-07)
+------------------
+* ROS submodule update 10/07/2024 (`#356 <https://github.com/LORD-MicroStrain/microstrain_inertial/issues/356>`_)
+* ROS submodule update 08/23/2024 (`#349 <https://github.com/LORD-MicroStrain/microstrain_inertial/issues/349>`_)
+* Contributors: Rob
+
+4.3.0 (2024-05-15)
+------------------
+* Updates CV7 INS example yaml (`https://github.com/LORD-MicroStrain/microstrain_inertial/pull/330` _)
+* Update udev to specify manufacturer (`https://github.com/LORD-MicroStrain/microstrain_inertial/pull/327` _)
+* Rename gx5_15 config file to match folder name (`https://github.com/LORD-MicroStrain/microstrain_inertial/pull/321 _`)
+* Updates submodule (`#328 <https://github.com/LORD-MicroStrain/microstrain_inertial/issues/329>`_)
+  * Adds ability for ROS2 implementation to be a non-lifecycle node microstrain_inertial_driver_common#68
+  * Remove dongle version check microstrain_inertial_driver_common#72
+  * Updates MIP SDK to fully support CV7-INS microstrain_inertial_driver_common#73
+  * Waits for GNSS antenna transforms instead of erroring if they cannot be found microstrain_inertial_driver_common#74
+  * Fixes the gnss_state in human readable status microstrain_inertial_driver_common#75
+* Contributors: hilary-luo, GreatAlexander, robbiefish
+
 4.2.0 (2024-04-04)
 ------------------
 * Adds ability for node to be launched as a normal non lifecycle node (`#317 <https://github.com/LORD-MicroStrain/microstrain_inertial/issues/317>`_)

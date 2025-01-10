@@ -122,25 +122,34 @@ The node has some optional launch parameters that can be specified from the comm
 - `namespace` : namespace that the driver will run in. All services and publishers will be prepended with this, default: `/`
 - `node_name` : name of the driver, default: `microstrain_inertial_driver`
 - `debug`     : output debug logs, default: `false`
-- `params_file` : path to a parameter file to override the default parameters stored in [`params.yml`](./microstrain_inertial_driver/microstrain_inertial_driver_common/config/params.yml), default: [`empty.yml`](./microstrain_inertial_driver/config/empty.yml)
+- `params_file` : path to a parameter file to override the default parameters stored in [`params.yml`](https://github.com/LORD-MicroStrain/microstrain_inertial_driver_common/blob/main/config/params.yml), default: [`empty.yml`](./microstrain_inertial_driver/config/empty.yml)
+
+> [!NOTE]
+> The example [`params.yml`](https://github.com/LORD-MicroStrain/microstrain_inertial_driver_common/blob/main/config/params.yml) file is formatted to work with ROS and will not work if specified as the params_file argument in ROS2.
+>
+> If you want to override parameters for ROS2, start with [`empty.yml`](./microstrain_inertial_driver/config/empty.yml).
     
 #### Publish data from two devices simultaneously  
 
-1. Create the following files somewhere on your system (we will assume they are stored in the `~` directory):
+1. Create the following files somewhere on your system (we will assume they are stored in your home (`~`) directory):
     1. `~/sensor_a_params.yml` with the contents:
         ```yaml
-        port: /dev/ttyACM0
+        microstrain_inertial_driver:
+          ros__parameters:
+            port: /dev/ttyACM0
         ```
     2. `~/sensor_b_params.yml` with the contents:
         ```yaml
-        port: /dev/ttyACM1
+        microstrain_inertial_driver:
+          ros__parameters:
+            port: /dev/ttyACM1
         ```
 2. In two different terminals:
     ```bash    
-    ros2 launch microstrain_inertial_driver microstrain_launch.py node_name:=sensor_a_node namespace:=sensor_a params_file:="~/sensor_a_params.yml"
+    ros2 launch microstrain_inertial_driver microstrain_launch.py node_name:=sensor_a_node namespace:=sensor_a params_file:="$HOME/sensor_a_params.yml"
     ```
     ```bash    
-    ros2 launch microstrain_inertial_driver microstrain_launch.py node_name:=sensor_b_node namespace:=sensor_b params_file:="~/sensor_b_params.yml"
+    ros2 launch microstrain_inertial_driver microstrain_launch.py node_name:=sensor_b_node namespace:=sensor_b params_file:="$HOME/sensor_b_params.yml"
     ```
 
 This will launch two nodes that publish data to different namespaces:

@@ -26,7 +26,7 @@ if not os.path.isdir(common_resource_dir):
 
 setup(
     name=package_name,
-    version='4.2.0',
+    version='4.3.0',
     package_dir={'': common_src_dir},
     packages=find_packages(common_src_dir),
     data_files=[
