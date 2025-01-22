@@ -123,11 +123,15 @@ The node has some optional launch parameters that can be specified from the comm
 1. Create the following files somewhere on your system (we will assume they are stored in the `~` directory):
     1. `~/sensor_a_params.yml` with the contents:
         ```yaml
-        port: /dev/ttyACM0
+        sensor_a/microstrain_inertial_driver:
+           ros__parameters:
+            port: /dev/ttyACM0
         ```
     2. `~/sensor_b_params.yml` with the contents:
         ```yaml
-        port: /dev/ttyACM1
+        sensor_b/microstrain_inertial_driver:
+           ros__parameters:
+              port: /dev/ttyACM1
         ```
 2. In two different terminals:
     ```bash    
