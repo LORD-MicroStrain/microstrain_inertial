@@ -1,6 +1,6 @@
 [submodule "microstrain_inertial_msgs/microstrain_inertial_msgs_common"]
 	path = microstrain_inertial_msgs/microstrain_inertial_msgs_common
-	url = https://github.com/LORD-MicroStrain/microstrain_inertial_msgs_common.git
+	url = https://github.com/BoviRobotics/microstrain_inertial_msgs_common
 [submodule "microstrain_inertial_driver/microstrain_inertial_driver_common"]
 	path = microstrain_inertial_driver/microstrain_inertial_driver_common
 	url = https://github.com/LORD-MicroStrain/microstrain_inertial_driver_common.git
