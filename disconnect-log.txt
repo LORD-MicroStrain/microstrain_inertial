@@ -1,0 +1,297 @@
+PARAMETERS
+ * /microstrain_inertial_driver/accel_low_pass_filter_auto: False
+ * /microstrain_inertial_driver/accel_low_pass_filter_enable: False
+ * /microstrain_inertial_driver/accel_low_pass_filter_frequency: 1
+ * /microstrain_inertial_driver/aux_baudrate: 115200
+ * /microstrain_inertial_driver/aux_port: /dev/ttyACM1
+ * /microstrain_inertial_driver/baudrate: 115200
+ * /microstrain_inertial_driver/configure_after_reconnect: True
+ * /microstrain_inertial_driver/debug: False
+ * /microstrain_inertial_driver/device_setup: True
+ * /microstrain_inertial_driver/earth_frame_id: earth
+ * /microstrain_inertial_driver/enable_hardware_odometer: False
+ * /microstrain_inertial_driver/filter_adaptive_level: 2
+ * /microstrain_inertial_driver/filter_adaptive_time_limit_ms: 15000
+ * /microstrain_inertial_driver/filter_auto_heading_alignment_selector: 1
+ * /microstrain_inertial_driver/filter_auto_init: True
+ * /microstrain_inertial_driver/filter_declination: 0.23
+ * /microstrain_inertial_driver/filter_declination_source: 2
+ * /microstrain_inertial_driver/filter_dual_antenna_heading_data_rate: 0
+ * /microstrain_inertial_driver/filter_dynamics_mode: 1
+ * /microstrain_inertial_driver/filter_enable_altimeter_aiding: False
+ * /microstrain_inertial_driver/filter_enable_external_gps_time_update: False
+ * /microstrain_inertial_driver/filter_enable_external_heading_aiding: False
+ * /microstrain_inertial_driver/filter_enable_gnss_antenna_cal: True
+ * /microstrain_inertial_driver/filter_enable_gnss_heading_aiding: True
+ * /microstrain_inertial_driver/filter_enable_gnss_pos_vel_aiding: True
+ * /microstrain_inertial_driver/filter_enable_magnetometer_aiding: False
+ * /microstrain_inertial_driver/filter_enable_odometer_aiding: False
+ * /microstrain_inertial_driver/filter_enable_vertical_gyro_constraint: False
+ * /microstrain_inertial_driver/filter_enable_wheeled_vehicle_constraint: False
+ * /microstrain_inertial_driver/filter_external_gps_time_topic: /external_gps_time
+ * /microstrain_inertial_driver/filter_gnss_aiding_source_control: 1
+ * /microstrain_inertial_driver/filter_gnss_antenna_cal_max_offset: 0.1
+ * /microstrain_inertial_driver/filter_heading_source: 1
+ * /microstrain_inertial_driver/filter_human_readable_status_data_rate: 1
+ * /microstrain_inertial_driver/filter_imu_data_rate: 0
+ * /microstrain_inertial_driver/filter_init_attitude: [0.0, 0.0, 0.0]
+ * /microstrain_inertial_driver/filter_init_condition_src: 0
+ * /microstrain_inertial_driver/filter_init_position: [0.0, 0.0, 0.0]
+ * /microstrain_inertial_driver/filter_init_reference_frame: 2
+ * /microstrain_inertial_driver/filter_init_velocity: [0.0, 0.0, 0.0]
+ * /microstrain_inertial_driver/filter_lever_arm_offset: [0.0, 0.0, 0.0]
+ * /microstrain_inertial_driver/filter_llh_position_data_rate: 0
+ * /microstrain_inertial_driver/filter_nmea_gga_data_rate: 0
+ * /microstrain_inertial_driver/filter_nmea_gll_data_rate: 0
+ * /microstrain_inertial_driver/filter_nmea_hdt_data_rate: 0
+ * /microstrain_inertial_driver/filter_nmea_prka_data_rate: 0
+ * /microstrain_inertial_driver/filter_nmea_rmc_data_rate: 0
+ * /microstrain_inertial_driver/filter_nmea_talker_id: 3
+ * /microstrain_inertial_driver/filter_odometry_earth_data_rate: 25
+ * /microstrain_inertial_driver/filter_odometry_map_data_rate: 25
+ * /microstrain_inertial_driver/filter_pps_source: 1
+ * /microstrain_inertial_driver/filter_relative_position_config: False
+ * /microstrain_inertial_driver/filter_relative_position_frame: 2
+ * /microstrain_inertial_driver/filter_relative_position_ref: [0.0, 0.0, 0.01]
+ * /microstrain_inertial_driver/filter_relative_position_source: 2
+ * /microstrain_inertial_driver/filter_reset_after_config: True
+ * /microstrain_inertial_driver/filter_sensor2vehicle_frame_selector: 1
+ * /microstrain_inertial_driver/filter_sensor2vehicle_frame_transformation_euler: [0.0, 0.0, 0.0]
+ * /microstrain_inertial_driver/filter_sensor2vehicle_frame_transformation_matrix: [1.0, 0.0, 0.0, 0...
+ * /microstrain_inertial_driver/filter_sensor2vehicle_frame_transformation_quaternion: [0.0, 0.0, 0.0, 1.0]
+ * /microstrain_inertial_driver/filter_speed_lever_arm: [0.0, 0.5, -1.0]
+ * /microstrain_inertial_driver/filter_speed_lever_arm_source: 0
+ * /microstrain_inertial_driver/filter_use_compensated_accel: True
+ * /microstrain_inertial_driver/filter_velocity_data_rate: 0
+ * /microstrain_inertial_driver/filter_velocity_ecef_data_rate: 0
+ * /microstrain_inertial_driver/frame_id: imu_link
+ * /microstrain_inertial_driver/gnss1_antenna_offset: [0.0, -0.7, -1.0]
+ * /microstrain_inertial_driver/gnss1_antenna_offset_source: 1
+ * /microstrain_inertial_driver/gnss1_frame_id: gnss_1_antenna_link
+ * /microstrain_inertial_driver/gnss1_llh_position_data_rate: 2
+ * /microstrain_inertial_driver/gnss1_nmea_gga_data_rate: 0
+ * /microstrain_inertial_driver/gnss1_nmea_gll_data_rate: 0
+ * /microstrain_inertial_driver/gnss1_nmea_gsv_data_rate: 0
+ * /microstrain_inertial_driver/gnss1_nmea_hdt_data_rate: 0
+ * /microstrain_inertial_driver/gnss1_nmea_rmc_data_rate: 0
+ * /microstrain_inertial_driver/gnss1_nmea_talker_id: 1
+ * /microstrain_inertial_driver/gnss1_nmea_vtg_data_rate: 0
+ * /microstrain_inertial_driver/gnss1_nmea_zda_data_rate: 0
+ * /microstrain_inertial_driver/gnss1_odometry_earth_data_rate: 0
+ * /microstrain_inertial_driver/gnss1_time_data_rate: 0
+ * /microstrain_inertial_driver/gnss1_velocity_data_rate: 2
+ * /microstrain_inertial_driver/gnss1_velocity_ecef_data_rate: 0
+ * /microstrain_inertial_driver/gnss2_antenna_offset: [0.0, 0.7, -1.0]
+ * /microstrain_inertial_driver/gnss2_antenna_offset_source: 1
+ * /microstrain_inertial_driver/gnss2_frame_id: gnss_2_antenna_link
+ * /microstrain_inertial_driver/gnss2_llh_position_data_rate: 2
+ * /microstrain_inertial_driver/gnss2_nmea_gga_data_rate: 0
+ * /microstrain_inertial_driver/gnss2_nmea_gll_data_rate: 0
+ * /microstrain_inertial_driver/gnss2_nmea_gsv_data_rate: 0
+ * /microstrain_inertial_driver/gnss2_nmea_hdt_data_rate: 0
+ * /microstrain_inertial_driver/gnss2_nmea_rmc_data_rate: 0
+ * /microstrain_inertial_driver/gnss2_nmea_talker_id: 2
+ * /microstrain_inertial_driver/gnss2_nmea_vtg_data_rate: 0
+ * /microstrain_inertial_driver/gnss2_nmea_zda_data_rate: 0
+ * /microstrain_inertial_driver/gnss2_odometry_earth_data_rate: 0
+ * /microstrain_inertial_driver/gnss2_time_data_rate: 0
+ * /microstrain_inertial_driver/gnss2_velocity_data_rate: 2
+ * /microstrain_inertial_driver/gnss2_velocity_ecef_data_rate: 0
+ * /microstrain_inertial_driver/gnss_beidou_enable: True
+ * /microstrain_inertial_driver/gnss_galileo_enable: True
+ * /microstrain_inertial_driver/gnss_glonass_enable: True
+ * /microstrain_inertial_driver/gpio1_behavior: 0
+ * /microstrain_inertial_driver/gpio1_feature: 0
+ * /microstrain_inertial_driver/gpio1_pin_mode: 0
+ * /microstrain_inertial_driver/gpio2_behavior: 0
+ * /microstrain_inertial_driver/gpio2_feature: 0
+ * /microstrain_inertial_driver/gpio2_pin_mode: 0
+ * /microstrain_inertial_driver/gpio3_behavior: 0
+ * /microstrain_inertial_driver/gpio3_feature: 0
+ * /microstrain_inertial_driver/gpio3_pin_mode: 0
+ * /microstrain_inertial_driver/gpio4_behavior: 0
+ * /microstrain_inertial_driver/gpio4_feature: 0
+ * /microstrain_inertial_driver/gpio4_pin_mode: 0
+ * /microstrain_inertial_driver/gpio_config: False
+ * /microstrain_inertial_driver/gps_leap_seconds: 18.0
+ * /microstrain_inertial_driver/gyro_low_pass_filter_auto: False
+ * /microstrain_inertial_driver/gyro_low_pass_filter_enable: False
+ * /microstrain_inertial_driver/gyro_low_pass_filter_frequency: 1
+ * /microstrain_inertial_driver/imu_angular_cov: [0.01, 0.0, 0.0, ...
+ * /microstrain_inertial_driver/imu_data_rate: 100
+ * /microstrain_inertial_driver/imu_data_raw_rate: 1
+ * /microstrain_inertial_driver/imu_linear_cov: [0.01, 0.0, 0.0, ...
+ * /microstrain_inertial_driver/imu_mag_cov: [0.01, 0.0, 0.0, ...
+ * /microstrain_inertial_driver/imu_mag_data_rate: 0
+ * /microstrain_inertial_driver/imu_nmea_prkr_data_rate: 0
+ * /microstrain_inertial_driver/imu_orientation_cov: [0.01, 0.0, 0.0, ...
+ * /microstrain_inertial_driver/imu_pressure_data_rate: 0
+ * /microstrain_inertial_driver/imu_pressure_variance: 0.01
+ * /microstrain_inertial_driver/imu_wheel_speed_data_rate: 0
+ * /microstrain_inertial_driver/low_pass_filter_config: True
+ * /microstrain_inertial_driver/mag_low_pass_filter_auto: False
+ * /microstrain_inertial_driver/mag_low_pass_filter_enable: False
+ * /microstrain_inertial_driver/mag_low_pass_filter_frequency: 1
+ * /microstrain_inertial_driver/map_frame_id: map
+ * /microstrain_inertial_driver/mip_filter_aiding_measurement_summary_data_rate: 0
+ * /microstrain_inertial_driver/mip_filter_gnss_dual_antenna_status_data_rate: 0
+ * /microstrain_inertial_driver/mip_filter_gnss_position_aiding_status_data_rate: 0
+ * /microstrain_inertial_driver/mip_filter_multi_antenna_offset_correction_data_rate: 0
+ * /microstrain_inertial_driver/mip_filter_status_data_rate: 0
+ * /microstrain_inertial_driver/mip_gnss1_fix_info_data_rate: 0
+ * /microstrain_inertial_driver/mip_gnss1_rf_error_detection_data_rate: 0
+ * /microstrain_inertial_driver/mip_gnss1_sbas_info_data_rate: 0
+ * /microstrain_inertial_driver/mip_gnss2_fix_info_data_rate: 0
+ * /microstrain_inertial_driver/mip_gnss2_rf_error_detection_data_rate: 0
+ * /microstrain_inertial_driver/mip_gnss2_sbas_info_data_rate: 0
+ * /microstrain_inertial_driver/mip_sensor_overrange_status_data_rate: 0
+ * /microstrain_inertial_driver/mip_sensor_temperature_statistics_data_rate: 0
+ * /microstrain_inertial_driver/mount_frame_id: base_link
+ * /microstrain_inertial_driver/mount_to_frame_id_transform: [0.0, 0.0, 0.0, 0...
+ * /microstrain_inertial_driver/nmea_message_allow_duplicate_talker_ids: False
+ * /microstrain_inertial_driver/nmea_message_config: False
+ * /microstrain_inertial_driver/ntrip_interface_enable: False
+ * /microstrain_inertial_driver/odometer_frame_id: odometer_link
+ * /microstrain_inertial_driver/odometer_scaling: 0.0
+ * /microstrain_inertial_driver/odometer_uncertainty: 0.0
+ * /microstrain_inertial_driver/poll_max_tries: 60
+ * /microstrain_inertial_driver/poll_port: False
+ * /microstrain_inertial_driver/poll_rate_hz: 1.0
+ * /microstrain_inertial_driver/port: /dev/ttyUSB0
+ * /microstrain_inertial_driver/pressure_low_pass_filter_auto: False
+ * /microstrain_inertial_driver/pressure_low_pass_filter_enable: False
+ * /microstrain_inertial_driver/pressure_low_pass_filter_frequency: 1
+ * /microstrain_inertial_driver/publish_mount_to_frame_id_transform: True
+ * /microstrain_inertial_driver/raw_file_directory: /home/your_name
+ * /microstrain_inertial_driver/raw_file_enable: False
+ * /microstrain_inertial_driver/raw_file_include_support_data: True
+ * /microstrain_inertial_driver/reconnect_attempts: 0
+ * /microstrain_inertial_driver/rtk_dongle_enable: True
+ * /microstrain_inertial_driver/save_settings: False
+ * /microstrain_inertial_driver/sbas_apply_integrity: False
+ * /microstrain_inertial_driver/sbas_enable: True
+ * /microstrain_inertial_driver/sbas_enable_corrections: True
+ * /microstrain_inertial_driver/sbas_enable_ranging: False
+ * /microstrain_inertial_driver/set_baud: False
+ * /microstrain_inertial_driver/subscribe_ext_fix: False
+ * /microstrain_inertial_driver/subscribe_ext_heading_enu: False
+ * /microstrain_inertial_driver/subscribe_ext_heading_ned: False
+ * /microstrain_inertial_driver/subscribe_ext_mag: False
+ * /microstrain_inertial_driver/subscribe_ext_pressure: False
+ * /microstrain_inertial_driver/subscribe_ext_time: False
+ * /microstrain_inertial_driver/subscribe_ext_vel_body: False
+ * /microstrain_inertial_driver/subscribe_ext_vel_ecef: False
+ * /microstrain_inertial_driver/subscribe_ext_vel_enu: False
+ * /microstrain_inertial_driver/subscribe_ext_vel_ned: False
+ * /microstrain_inertial_driver/target_frame_id: base_link
+ * /microstrain_inertial_driver/tf_mode: 0
+ * /microstrain_inertial_driver/timestamp_source: 2
+ * /microstrain_inertial_driver/use_enu_frame: True
+ * /rosdistro: noetic
+ * /rosversion: 1.17.0
+
+NODES
+  /
+    microstrain_inertial_driver (microstrain_inertial_driver/microstrain_inertial_driver_node)
+
+auto-starting new master
+process[master]: started with pid [13112]
+ROS_MASTER_URI=http://localhost:11311
+
+setting /run_id to 499b5bea-0001-11f0-a718-3ce9f7b813bb
+process[rosout-1]: started with pid [13122]
+started core service [/rosout]
+process[microstrain_inertial_driver-2]: started with pid [13129]
+[ INFO] [1741866598.279589207]: Running microstrain_inertial_driver version: 4.5.0
+[ INFO] [1741866598.280120119]: Using MIP SDK version: v1.0.0-283-g2c4cb6b
+[ WARN] [1741866598.280128509]: No relative position configured. We will not publish relative odometry or transforms.
+[ WARN] [1741866598.280136804]:   Please configure relative position to publish relative position data
+[ INFO] [1741866598.281721941]: Attempting to open serial port </dev/ttyUSB0> at <115200>
+[ INFO] [1741866598.282402216]: Setting device to idle in order to configure
+[ INFO] [1741866598.317615063]: Main Connection Info:
+    #######################
+    Model Name:       3DM-GQ7
+    Serial Number:    6284.00001
+    Firmware Version: 1.1.04
+    #######################
+[ INFO] [1741866598.479944124]: Note: Not configuring GPIO
+[ INFO] [1741866598.479982546]: Setting PPS source to 0x0001
+[ INFO] [1741866598.482394797]: Setting hardware odometer to: mode = 0, scaling = 0.000000, uncertainty = 0.000000
+[ INFO] [1741866598.485332401]: Configuring SBAS with:
+[ INFO] [1741866598.485347858]:   enable = 1
+[ INFO] [1741866598.485360663]:   enable ranging = 0
+[ INFO] [1741866598.485373093]:   enable corrections = 1
+[ INFO] [1741866598.485385399]:   apply integrity = 0
+[ INFO] [1741866598.485397567]:   prns: [ ]
+[ INFO] [1741866598.500463283]: Not configuring NMEA message format because 'nmea_message_config' is false
+[ INFO] [1741866598.500527978]: Configuring low pass filter with:
+[ INFO] [1741866598.500545263]:   descriptor_set = 0x80
+[ INFO] [1741866598.500559385]:   field_descriptor = 0x04
+[ INFO] [1741866598.500577018]:   enable = 0
+[ INFO] [1741866598.500591682]:   manual = 1
+[ INFO] [1741866598.500610990]:   frequency = 1.000000
+[ INFO] [1741866598.503374619]: Configuring low pass filter with:
+[ INFO] [1741866598.503394024]:   descriptor_set = 0x80
+[ INFO] [1741866598.503406676]:   field_descriptor = 0x05
+[ INFO] [1741866598.503418798]:   enable = 0
+[ INFO] [1741866598.503437453]:   manual = 1
+[ INFO] [1741866598.503454283]:   frequency = 1.000000
+[ INFO] [1741866598.506401682]: Configuring low pass filter with:
+[ INFO] [1741866598.506443232]:   descriptor_set = 0x80
+[ INFO] [1741866598.506460256]:   field_descriptor = 0x06
+[ INFO] [1741866598.506476359]:   enable = 0
+[ INFO] [1741866598.506505658]:   manual = 1
+[ INFO] [1741866598.506533132]:   frequency = 1.000000
+[ INFO] [1741866598.509437611]: Configuring low pass filter with:
+[ INFO] [1741866598.509482948]:   descriptor_set = 0x80
+[ INFO] [1741866598.509513577]:   field_descriptor = 0x17
+[ INFO] [1741866598.509535484]:   enable = 0
+[ INFO] [1741866598.509552290]:   manual = 1
+[ INFO] [1741866598.509573101]:   frequency = 1.000000
+[ INFO] [1741866598.514988906]: Setting RTK dongle enable to 1
+[ INFO] [1741866598.518427793]: Setting GNSS Signal Configuration to:
+[ INFO] [1741866598.518453032]:   glonass_enable = 3
+[ INFO] [1741866598.518467272]:   galileo_enable = 3
+[ INFO] [1741866598.518481955]:   beidou_enable = 3
+[ INFO] [1741866598.548030107]: Setting Declination Source to 2 0.230000
+[ INFO] [1741866598.551350066]: Setting GNSS1 antenna offset to [0.000000, -0.700000, -1.000000]
+[ INFO] [1741866598.555389259]: Setting GNSS2 antenna offset to [0.000000, 0.700000, -1.000000]
+[ INFO] [1741866598.559384916]: Note: The device does not support the vehicle dynamics mode command.
+[ INFO] [1741866598.559409397]: Setting GNSS aiding source control to 1
+[ INFO] [1741866598.563377435]: Note: The device does not support the heading source command.
+[ INFO] [1741866598.563415855]: Note: The device does not support the filter autoinitialization command.
+[ INFO] [1741866598.563438412]: Setting autoadaptive options to: level = 2, time_limit = 15000
+[ INFO] [1741866598.571392047]: Filter aiding gnss pos/vel = 1
+[ INFO] [1741866598.575357587]: Filter aiding gnss heading = 1
+[ INFO] [1741866598.579373393]: Filter aiding altimeter = 0
+[ INFO] [1741866598.583353552]: Filter aiding odometer = 0
+[ INFO] [1741866598.587351874]: Filter aiding magnetometer = 0
+[ INFO] [1741866598.591359045]: Filter aiding external heading = 0
+[ INFO] [1741866598.591399665]: Setting wheeled vehicle contraint enable to 0
+[ INFO] [1741866598.595333589]: Setting vertical gyro contraint enable to 0
+[ INFO] [1741866598.599323766]: Setting GNSS antenna calibration control to: enable = 1, offset = 0.100000
+[ INFO] [1741866598.603299245]: Setting filter initialization configuration to:
+[ INFO] [1741866598.603317240]:   auto init = 1
+[ INFO] [1741866598.603329176]:   initial condition source = 0
+[ INFO] [1741866598.603340871]:   auto heading alignment selector = 1
+[ INFO] [1741866598.603353903]:   initial attitude = [0.000000, 0.000000, 0.000000]
+[ INFO] [1741866598.603366827]:   initial position = [0.000000, 0.000000, 0.000000]
+[ INFO] [1741866598.603378271]:   initial velocity = [0.000000, 0.000000, 0.000000]
+[ INFO] [1741866598.603389902]:   reference frame selector = 2
+[ INFO] [1741866598.611383436]: Setting sensor to vehicle transformation euler to [0.000000, 0.000000, 0.000000]
+[ INFO] [1741866598.614877814]: Setting filter reference point lever arm to [0.000000, 0.000000, 0.000000]
+[ INFO] [1741866598.619297811]: Note: The settings were not saved as startup settings. Power cycling will remove changes from device
+[ INFO] [1741866598.619310167]: Resetting the filter after the configuration is complete.
+[ INFO] [1741866598.645851745]: Setting spin rate to <200.000000> hz
+[ INFO] [1741866598.645936514]: Resuming the device data streams
+[ INFO] [1741866598.647910411]: Node activated
+[ INFO] [1741866598.647990991]: Starting Data Parsing
+[ WARN] [1741866599.613238452]: RTK Dongle version 0 is unsupported. RtkCorrectionsStatus fields may be invalid.
+[ERROR] [1741866601.388118624]: MIP SDK: Poll encountered HUP, closing devic
+[ERROR] [1741866601.388247856]: Unable to update device
+[ERROR] [1741866601.388519483]: Error: Device disconnected
+[ INFO] [1741866601.388588925]: Forcing the device to idle
+[ERROR] [1741866604.389054747]: Unable to set node to idle
+[ERROR] [1741866604.389083588]: Error(-6): Error
+[microstrain_inertial_driver-2] process has died [pid 13129, exit code 4, cmd /home/microstrain/catkin_ws/devel/lib/microstrain_inertial_driver/microstrain_inertial_driver_node __name:=microstrain_inertial_driver __log:=/home/microstrain/.ros/log/499b5bea-0001-11f0-a718-3ce9f7b813bb/microstrain_inertial_driver-2.log].
+log file: /home/microstrain/.ros/log/499b5bea-0001-11f0-a718-3ce9f7b813bb/microstrain_inertial_driver-2*.log
