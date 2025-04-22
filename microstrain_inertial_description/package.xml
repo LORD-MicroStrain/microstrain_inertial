@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="3">
   <name>microstrain_inertial_description</name>
-  <version>4.5.0</version>
+  <version>4.6.0</version>
   <description>URDF and stl files for MicroStrain sensors.</description>
   <maintainer email="rob.fisher@parker.com">Rob Fisher</maintainer>
   <maintainer email="melissa.gill@parker.com">Melissa Gill</maintainer>

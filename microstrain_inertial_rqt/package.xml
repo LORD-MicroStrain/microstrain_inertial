@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="3">
   <name>microstrain_inertial_rqt</name>
-  <version>4.5.0</version>
+  <version>4.6.0</version>
   <description>The microstrain_inertial_rqt package provides several RQT widgets to view the status of Microstrain devices</description>
   <maintainer email="rob.fisher@parker.com">Rob Fisher</maintainer>
   <maintainer email="melissa.gill@parker.com">Melissa Gill</maintainer>
