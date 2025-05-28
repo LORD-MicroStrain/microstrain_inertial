@@ -2,7 +2,7 @@
     "configurations": [
         {
             "name": "CMake",
-            "compileCommands": "${config:cmake.buildDirectory}/microstrain_inertial_driver/compile_commands.json",
+            "compileCommands": "/home/microstrain/catkin_ws/build/microstrain_inertial_driver/compile_commands.json",
             "configurationProvider": "ms-vscode.cmake-tools"
         }
     ],
