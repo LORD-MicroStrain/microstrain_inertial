@@ -1,7 +1,7 @@
 microstrain_inertial_driver:
   ros__parameters:
     # You should change this section of config to match your setup
-    port : '/dev/ttyACM1'  # TODO: Update udev rules so microstrain_main would work
+    port : '/dev/microstrain_main'
     baudrate : 115200
 
     # This will cause the node to convert any NED measurements to ENU
@@ -72,6 +72,3 @@ microstrain_inertial_driver:
 
     # Disable the declination source. You may want to set this to manual
     filter_declination_source: 0
-
-    raw_file_enable : True
-    raw_file_directory : "/home/microstrain"
