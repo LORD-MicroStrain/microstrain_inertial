@@ -149,8 +149,6 @@ include_directories(
   ${GeographicLib_INCLUDE_DIRS}
 )
 
-ament_package()
-
 set(COMMON_SRC_FILES
   ${COMMON_SRC_DIR}/subscribers.cpp
   ${COMMON_SRC_DIR}/publishers.cpp
@@ -303,6 +301,8 @@ install(DIRECTORY launch config
 install(DIRECTORY ${COMMON_DIR}/config
   DESTINATION share/${PROJECT_NAME}/${COMMON_NAME}
 )
+
+ament_package()
 
 # Reset the forced options
 set(BUILD_SHARED_LIBS "${BUILD_SHARED_LIBS_TEMP}" CACHE BOOL "${BUILD_SHARED_LIBS_TEMP}" FORCE)
