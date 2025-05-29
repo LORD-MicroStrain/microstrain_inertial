@@ -15,6 +15,8 @@ set(BUILD_TESTING_TEMP "${BUILD_TESTING}")
 set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
 set(BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 set(BUILD_TESTING OFF CACHE BOOL "" FORCE)
+set(MICROSTRAIN_USE_STD_ENDIAN OFF CACHE BOOL "" FORCE)
+set(MICROSTRAIN_USE_STD_SPAN OFF CACHE BOOL "" FORCE)
 
 # Locate the common code and messages
 set(COMMON_NAME "microstrain_inertial_driver_common")
@@ -220,6 +222,9 @@ include_directories(${MSCL_INC_PATH} ${BOOST_INC_PATH})
 target_link_libraries(${PROJECT_NAME}
   ${catkin_LIBRARIES}
   mip
+  microstrain
+  microstrain_serial
+  microstrain_recording_connection
 )
 target_link_libraries(${PROJECT_NAME}_node
   ${PROJECT_NAME}

@@ -1,0 +1,25 @@
+<?xml version="1.1"?>
+
+<!-- Standalone example launch file to launch a node that interfaces with a CV7-GNSS-INS -->
+<launch>
+
+  <!-- Specify our custom params file to the microstrin launch file -->
+  <include file="$(find microstrain_inertial_driver)/launch/microstrain.launch">
+    <arg name="namespace" value="/" />
+    <arg name="params_file" value="$(find microstrain_inertial_examples)/config/cv7_gnss_ins/cv7_gnss_ins.yml" />
+  </include>
+
+  <!-- Publish a static transform for where the CV7-GNSS-INS is mounted on base_link. -->
+  <!-- Unless the GQ7 is mounted exactly at base_link, you should change this to be accurate to your setup -->
+  <node 
+    pkg="tf"
+    type="static_transform_publisher"
+    name="base_link_cv7_gnss_ins_link_static_transform"
+    output="screen"
+    args="
+      0 0 0 0 0 0 base_link cv7_gnss_ins_link 1000
+    " />
+
+  <!-- Start RViz -->
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find microstrain_inertial_examples)/config/cv7_gnss_ins/display.rviz" />
+</launch>

@@ -1,0 +1,72 @@
+# You should change this section of config to match your setup
+port : '/dev/microstrain_main'
+baudrate : 115200
+
+# This will cause the node to convert any NED measurements to ENU
+# This will also cause the node to convert any vehicle frame measurements to the ROS definition of a vehicle frame
+use_enu_frame : True
+
+# Configure some frame IDs
+frame_id          : 'cv7_gnss_ins_link'  # Frame ID of all of the filter messages. Represents the location of the CV7-INS in the tf tree
+map_frame_id      : "map"               # Frame ID of the local tangent plane.
+earth_frame_id    : "earth"             # Frame ID of the global frame
+gnss1_frame_id    : "cv7_gnss_ins_gnss_1_antenna_link"
+gnss2_frame_id    : "cv7_gnss_ins_gnss_2_antenna_link"
+odometer_frame_id : "cv7_gnss_ins_odometer_link"
+target_frame_id   : "base_link"     # Frame ID that we will publish a transform to.
+
+# Disable the transform from the mount to frame id transform as it will be handled in the launch file
+publish_mount_to_frame_id_transform : False
+
+# We will use relative transform mode, meaning that we will publish the following transforms from this node
+#   earth_frame_id -> map_frame_id
+#   map_frame_id -> target_frame_id
+# This helps ROS standard tools consume and display position information produced by the device
+tf_mode: 2
+
+# Enable the RTK dongle interface for communication with the 3DM-RTK.
+# Note: Even if you do not have a 3DM-RTK connected to the aux port, this boolean can remain true
+rtk_dongle_enable : True
+
+# This will turn on the NTRIP interface on the ROS driver. You can connect to a 3DM-RTK or NTRIP server using the nodes at:
+# https://github.com/LORD-MicroStrain/ntrip_client to acheive RTK level precision
+ntrip_interface_enable: True
+
+# We will auto detect the location of the tangent plan. This configuration does a couple things:
+#   We will setup a local tangent plane at the location of the first place the device gets a position fix.
+#   We will publish this location as the transform from the earth_frame_id to map_frame_id frame
+#   See https://wiki.ros.org/microstrain_inertial_driver/relative_position_configuration for more options.
+filter_relative_position_config : True
+filter_relative_position_source : 2
+
+# Set the antenna offsets.
+# Note: These should be changed for you setup, otherwise dual antenna heading will not initialize.
+gnss1_antenna_offset : [0.08, -0.5, 0.99]
+gnss2_antenna_offset : [0.08, 0.5, 0.99]
+
+# This will set the heading alignment to be dual antenna
+filter_auto_heading_alignment_selector : 1
+
+# This will contain the raw IMU data, NOT the filtered IMU data
+imu_data_rate : 100
+
+# The default is to publish LLH position and velocity, but rviz has a hard time displaying that.
+# Instead we will publish the position in the ECEF frame
+gnss1_llh_position_data_rate   : 0
+gnss1_velocity_data_rate       : 0
+gnss1_odometry_earth_data_rate : 5
+gnss2_llh_position_data_rate   : 0
+gnss2_velocity_data_rate       : 0
+gnss2_odometry_earth_data_rate : 5
+
+# We will only publish the odometry messages from the filter in this example.
+# Also publish the human readable message which can be echoed from the command line
+filter_human_readable_status_data_rate : 1
+filter_odometry_earth_data_rate        : 10
+filter_odometry_map_data_rate          : 10
+
+# Turning on this will cause the transform between gq7_link and gnss_1_antenna_link/gnss_2_antenna_link to be updated from the filter
+mip_filter_multi_antenna_offset_correction_data_rate : 2
+
+# Disable the declination source. You may want to set this to manual
+filter_declination_source: 0
