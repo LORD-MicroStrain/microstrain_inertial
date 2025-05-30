@@ -43,6 +43,7 @@
 
   <!-- CMake build dependencies -->
   <build_depend>ament_cmake</build_depend>
+  <build_depend>ament_cmake_target_dependencies</build_depend>
 
   <!-- Test Dependencies -->
   <test_depend>ament_cpplint</test_depend>
