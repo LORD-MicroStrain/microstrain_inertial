@@ -112,18 +112,63 @@ Once the udev rules are installed, the devices will appear as follows in the fil
 
 ## Run Instructions
 
-#### Launch the node and publish data
-The following command will launch the driver. Keep in mind each instance needs to be run in a separate terminal.
-```bash
-roslaunch microstrain_inertial_driver microstrain.launch
-```
+### Configuration for specific use: 
+The `microstrain_inertial_driver` launch files accept a `params_file` argument that allow users to easily configure
+desired parameters.
+> [!TIP]
+> It is highly recommended to follow the Override Parameters steps to ensure desired operation. 
+
+#### Override Parameters for ROS
+
+1. Copy and paste the line(s) you desire to change from
+[params.yml](https://github.com/LORD-MicroStrain/microstrain_inertial_driver_common/blob/main/config/params.yml)
+into a new `.yml` file. We will call it `~/my_params.yml`
+for this example. This new .yml file will override the default
+`params.yml` and if there are multiple lines of the same parameter, the
+last instance of the parameter will take precedence.
+
+2. Launch the driver and specify the new params file:
+
+    ```
+    roslaunch microstrain_inertial_driver microstrain.launch params_file:=$HOME/my_params.yml
+    ```
+
+#### Override Parameters for ROS2
+
+1. Copy the file
+[empty.yml](https://github.com/LORD-MicroStrain/microstrain_inertial/blob/ros2/microstrain_inertial_driver/config/empty.yml)
+to a new `.yml` file. For this example we will call the new file
+`~/my_params.yml`. This new .yml file will override the
+default params.yml and if there are multiple lines of the same
+parameter, the last instance of the parameter will take precedence.
+
+2. Copy and paste the line(s) you desire to change from
+[params.yml](https://github.com/LORD-MicroStrain/microstrain_inertial_driver_common/blob/main/config/params.yml)
+into `~/my_params.yml\`.
+
+3. Launch the driver and specify the new params file:
+
+    ```
+    ros2 launch microstrain_inertial_driver microstrain_launch.py params_file:=$HOME/my_params.yml
+    ```
+
+> [!TIP]
+> All configuration options are documented in the [params.yml](https://github.com/LORD-MicroStrain/microstrain_inertial_driver_common/blob/main/config/params.yml).
+>Please refer to that file for a list of parameters
+<br>
 
 The node has some optional launch parameters that can be specified from the command line in the format `param:=value`
 - `namespace` : namespace that the driver will run in. All services and publishers will be prepended with this, default: `/`
 - `node_name` : name of the driver, default: `microstrain_inertial_driver`
 - `debug`     : output debug logs, default: `false`
 - `params_file` : path to a parameter file to override the default parameters stored in [`params.yml`](https://github.com/LORD-MicroStrain/microstrain_inertial_driver_common/blob/main/config/params.yml), default: empty
-    
+
+#### Launch the node and publish data
+The following command will launch the driver. Keep in mind each instance needs to be run in a separate terminal.
+```bash
+roslaunch microstrain_inertial_driver microstrain.launch
+```
+
 #### Publish data from two devices simultaneously  
 
 1. Create the following files somewhere on your system (we will assume they are stored in the `~` directory):
