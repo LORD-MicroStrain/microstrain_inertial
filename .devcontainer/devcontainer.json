@@ -5,7 +5,7 @@
         "dockerfile": "Dockerfile.dev",
         "args": {
             "ARCH": "amd64",
-            "ROS_VERSION": "humble",
+            "ROS_VERSION": "jazzy",
             "USER_ID": "1000",
             "GROUP_ID": "1000"
         }

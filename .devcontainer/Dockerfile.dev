@@ -42,15 +42,41 @@ RUN set -ex \
 ARG USER_ID=1000
 ARG GROUP_ID=1000
 RUN set -ex \
-    && groupadd -g ${USER_ID} microstrain \
-    && useradd \
-        -N \
-        -m \
-        -u ${USER_ID} \
-        -g ${GROUP_ID} \
-        -G "dialout" \
-        -s "/bin/bash" \
-        microstrain \
+    && export name="microstrain" \
+    && apt-get update && apt-get install -y \
+        sudo \
+    \
+    # If the group already exists, just rename it, otherwise create it
+    && if getent group "${GROUP_ID}"; then \
+        groupmod -n ${name} "$(getent group ${GROUP_ID} | cut -d':' -f1)"; \
+    else \
+        groupadd -g ${GROUP_ID} ${name}; \
+    fi \
+    \
+    # If the user already exists, we need to rename it
+    && if id "${USER_ID}"; then \
+        /bin/bash -c ' \
+            set -ex && \
+            usermod -l ${name} $(id -nu ${USER_ID}) && \
+            usermod -d /home/${name} -m ${name} \
+        '; \
+    \
+    # Otherwise, we are safe to create the user
+    else \
+        /bin/bash -c ' \
+            set -ex && \
+            useradd \
+                -N \
+                -m \
+                -u ${USER_ID} \
+                -g ${GROUP_ID} \
+                -s "/bin/bash" \
+                ${name} \
+        '; \
+    fi \
+    \
+    # Add the user to the dialout and sudo group
+    && usermod -aG dialout microstrain \
     && echo 'microstrain ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
 
 # Make the directory where we will mount all the files into and build a single time
