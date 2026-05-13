@@ -215,7 +215,7 @@ set(NODE_INC_FILES
 )
 set(NODE_FILES ${NODE_SRC_FILES} ${NODE_INC_FILES})
 add_executable(${NODE_NAME} ${NODE_FILES} ${COMMON_FILES})
-ament_target_dependencies(${NODE_NAME}
+target_link_libraries(${NODE_NAME} PUBLIC
   ${AMENT_COMMON_DEPENDENCIES}
 )
 
@@ -231,7 +231,7 @@ set(LIFECYCLE_INC_FILES
 set(LIFECYCLE_FILES ${LIFECYCLE_SRC_FILES} ${LIFECYCLE_INC_FILES})
 add_executable(${LIFECYCLE_NAME} ${LIFECYCLE_FILES} ${COMMON_FILES})
 target_compile_definitions(${LIFECYCLE_NAME} PUBLIC MICROSTRAIN_LIFECYCLE)
-ament_target_dependencies(${LIFECYCLE_NAME}
+target_link_libraries(${LIFECYCLE_NAME} PUBLIC
   ${AMENT_COMMON_DEPENDENCIES}
 )
 
