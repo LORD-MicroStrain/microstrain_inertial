@@ -2,6 +2,13 @@
 Changelog for package microstrain_inertial_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Updates submodules(`#402 <https://github.com/LORD-MicroStrain/microstrain_inertial/issues/402>`_)
+  -Adding support for Nova GNSS development kit
+  -Adding experimental GNSS receiver reset service and conservative RTK mode
+* Contributors: Aidan
+
 4.8.1 (2026-04-08)
 ------------------
 
