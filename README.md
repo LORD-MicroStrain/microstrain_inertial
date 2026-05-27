@@ -64,6 +64,15 @@ For more information on the ROS distros and platforms we support, please see [in
 
 If you need to modify the source of this repository, or are running on a platform that we do not support, you can build from source by following the [Building From Source](#building-from-source) guide below.
 
+When building from source it is important to install the udev rules to ensure ports are static. Instructions below: 
+
+Download the [udev](https://github.com/LORD-MicroStrain/microstrain_inertial/blob/ros/microstrain_inertial_driver/debian/udev) file, and copy it to `/usr/lib/udev/rules.d/100-microstrain.rules` on Ubuntu or `/etc/udev/rules.d/100-microstrain.rules` on debian, CentOS, or Redhat
+
+Once the udev rule is installed, the devices will appear as follows in the file system, where {serial} is the serial number of the device:
+
+* `/dev/microstrain_main_{serial}` - All GX5 devices, and the main port of GQ7 devices
+* `/dev/microstrain_aux_{serial}` - The aux port of GQ7 devices
+* `/dev/microstrain_rtk_{serial}` - 3DM-RTK devices
 
 #### **IMPORTANT NOTE ABOUT CLONING**
 
