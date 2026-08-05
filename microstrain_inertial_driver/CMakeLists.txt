@@ -188,20 +188,20 @@ set(COMMON_INC_FILES
 set(COMMON_FILES ${COMMON_SRC_FILES} ${COMMON_INC_FILES})
 
 set(AMENT_COMMON_DEPENDENCIES
-  rclcpp
-  rclcpp_lifecycle
-  std_msgs
-  std_srvs
-  lifecycle_msgs
-  sensor_msgs
-  geometry_msgs
-  nav_msgs
-  nmea_msgs
-  rtcm_msgs
-  tf2
-  tf2_ros
-  tf2_geometry_msgs
-  microstrain_inertial_msgs
+  rclcpp::rclcpp
+  rclcpp_lifecycle::rclcpp_lifecycle
+  std_msgs::std_msgs
+  std_srvs::std_srvs
+  lifecycle_msgs::lifecycle_msgs
+  sensor_msgs::sensor_msgs
+  geometry_msgs::geometry_msgs
+  nav_msgs::nav_msgs
+  nmea_msgs::nmea_msgs
+  rtcm_msgs::rtcm_msgs
+  tf2::tf2
+  tf2_ros::tf2_ros
+  tf2_geometry_msgs::tf2_geometry_msgs
+  microstrain_inertial_msgs::microstrain_inertial_msgs
 )
 
 # Plain node
@@ -264,14 +264,14 @@ if(DEFINED ENV{ROS_DISTRO})
 endif()
 
 # Linking
-target_link_libraries(${LIFECYCLE_NAME}
+target_link_libraries(${LIFECYCLE_NAME} PUBLIC
   mip
   microstrain
   microstrain_serial
   microstrain_recording_connection
   ${GeographicLib_LIBRARIES}
 )
-target_link_libraries(${NODE_NAME}
+target_link_libraries(${NODE_NAME} PUBLIC
   mip
   microstrain
   microstrain_serial
