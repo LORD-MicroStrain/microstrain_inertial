@@ -18,7 +18,7 @@
 #include <vector>
 #include <algorithm>
 
-#include <tf2/LinearMath/Transform.h>
+#include <tf2/LinearMath/Transform.hpp>
 
 #include "lifecycle_msgs/msg/transition.hpp"
 
