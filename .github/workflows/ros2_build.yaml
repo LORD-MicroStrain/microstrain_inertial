@@ -4,7 +4,7 @@ on:
   push:
 jobs:
   build_and_test_ros2:
-    runs-on: ubunutu-22.04 
+    runs-on: ubuntu-22.04 
     container:
       image: rostooling/setup-ros-docker:ubuntu-jammy-latest
     steps:
