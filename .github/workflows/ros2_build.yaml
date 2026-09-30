@@ -23,7 +23,7 @@ jobs:
         with:
           package-name: microstrain_inertial_driver
           target-ros2-distro: jazzy 
-  build_and_test_jazzy:
+  build_and_test_kilted:
     runs-on: ubuntu-24.04 
     container:
       image: rostooling/setup-ros-docker:ubuntu-noble-latest
