@@ -188,20 +188,20 @@ set(COMMON_INC_FILES
 set(COMMON_FILES ${COMMON_SRC_FILES} ${COMMON_INC_FILES})
 
 set(AMENT_COMMON_DEPENDENCIES
-  rclcpp
-  rclcpp_lifecycle
-  std_msgs
-  std_srvs
-  lifecycle_msgs
-  sensor_msgs
-  geometry_msgs
-  nav_msgs
-  nmea_msgs
-  rtcm_msgs
-  tf2
-  tf2_ros
-  tf2_geometry_msgs
-  microstrain_inertial_msgs
+  rclcpp::rclcpp
+  rclcpp_lifecycle::rclcpp_lifecycle
+  std_msgs::std_msgs
+  std_srvs::std_srvs
+  lifecycle_msgs::lifecycle_msgs
+  sensor_msgs::sensor_msgs
+  geometry_msgs::geometry_msgs
+  nav_msgs::nav_msgs
+  nmea_msgs::nmea_msgs
+  rtcm_msgs::rtcm_msgs
+  tf2::tf2
+  tf2_ros::tf2_ros
+  tf2_geometry_msgs::tf2_geometry_msgs
+  microstrain_inertial_msgs::microstrain_inertial_msgs
 )
 
 # Plain node
@@ -215,7 +215,7 @@ set(NODE_INC_FILES
 )
 set(NODE_FILES ${NODE_SRC_FILES} ${NODE_INC_FILES})
 add_executable(${NODE_NAME} ${NODE_FILES} ${COMMON_FILES})
-ament_target_dependencies(${NODE_NAME}
+target_link_libraries(${NODE_NAME} PUBLIC
   ${AMENT_COMMON_DEPENDENCIES}
 )
 
@@ -231,7 +231,7 @@ set(LIFECYCLE_INC_FILES
 set(LIFECYCLE_FILES ${LIFECYCLE_SRC_FILES} ${LIFECYCLE_INC_FILES})
 add_executable(${LIFECYCLE_NAME} ${LIFECYCLE_FILES} ${COMMON_FILES})
 target_compile_definitions(${LIFECYCLE_NAME} PUBLIC MICROSTRAIN_LIFECYCLE)
-ament_target_dependencies(${LIFECYCLE_NAME}
+target_link_libraries(${LIFECYCLE_NAME} PUBLIC
   ${AMENT_COMMON_DEPENDENCIES}
 )
 
@@ -264,14 +264,14 @@ if(DEFINED ENV{ROS_DISTRO})
 endif()
 
 # Linking
-target_link_libraries(${LIFECYCLE_NAME}
+target_link_libraries(${LIFECYCLE_NAME} PUBLIC
   mip
   microstrain
   microstrain_serial
   microstrain_recording_connection
   ${GeographicLib_LIBRARIES}
 )
-target_link_libraries(${NODE_NAME}
+target_link_libraries(${NODE_NAME} PUBLIC
   mip
   microstrain
   microstrain_serial
