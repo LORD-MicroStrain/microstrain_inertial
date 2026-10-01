@@ -1,0 +1,56 @@
+
+name: ROS 2 CI
+on:
+  push:
+jobs:
+  build_and_test_humble:
+    runs-on: ubuntu-22.04 
+    container:
+      image: rostooling/setup-ros-docker:ubuntu-jammy-latest
+    steps:
+      - name: Build and run tests
+        uses: ros-tooling/action-ros-ci@v0.4
+        with:
+          package-name: microstrain_inertial_driver
+          target-ros2-distro: humble 
+  build_and_test_jazzy:
+    runs-on: ubuntu-24.04 
+    container:
+      image: rostooling/setup-ros-docker:ubuntu-noble-latest
+    steps:
+      - name: Build and run tests
+        uses: ros-tooling/action-ros-ci@v0.4
+        with:
+          package-name: microstrain_inertial_driver
+          target-ros2-distro: jazzy 
+  build_and_test_kilted:
+    runs-on: ubuntu-24.04 
+    container:
+      image: rostooling/setup-ros-docker:ubuntu-noble-latest
+    steps:
+      - name: Build and run tests
+        uses: ros-tooling/action-ros-ci@v0.4
+        with:
+          package-name: microstrain_inertial_driver
+          target-ros2-distro: kilted 
+  build_and_test_lyrical:
+    runs-on: ubuntu-26.04 
+    container:
+      image: rostooling/setup-ros-docker:ubuntu-resolute-latest
+    steps:
+      - name: Build and run tests
+        uses: ros-tooling/action-ros-ci@v0.4
+        with:
+          package-name: microstrain_inertial_driver
+          target-ros2-distro: lyrical 
+  build_and_test_rolling:
+    runs-on: ubuntu-26.04 
+    container:
+      image: rostooling/setup-ros-docker:ubuntu-resolute-latest
+    steps:
+      - name: Build and run tests
+        uses: ros-tooling/action-ros-ci@v0.4
+        with:
+          package-name: microstrain_inertial_driver
+          target-ros2-distro: rolling
+
