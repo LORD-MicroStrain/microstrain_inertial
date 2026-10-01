@@ -2,6 +2,14 @@
 Changelog for package microstrain_inertial_driver
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Updates submodules
+  -Fix Septentrio port baudrate configuration
+  -Remove C-style file extensions for Lyrical and Rolling
+  -Fix TransformBroadcaster type for Rolling
+* Contributors: Aidan
+
 4.9.0 (2026-05-21)
 ------------------
 * Updates submodules(`#402 <https://github.com/LORD-MicroStrain/microstrain_inertial/issues/402>`_)

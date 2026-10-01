@@ -2,6 +2,9 @@
 Changelog for package microstrain_inertial_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 4.9.0 (2026-05-21)
 ------------------
 * Updates submodules(`#402 <https://github.com/LORD-MicroStrain/microstrain_inertial/issues/402>`_)
