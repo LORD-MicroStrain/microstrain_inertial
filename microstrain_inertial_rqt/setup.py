@@ -49,5 +49,7 @@ setup(
     ],
     description='The microstrain_inertial_rqt package provides several RQT widgets to view the status of Microstrain devices',
     license='MIT',
-    tests_require=['pytest'],
+    extras_require={
+        'test': ['pytest'],
+    },
 )
