@@ -2,8 +2,8 @@
 Changelog for package microstrain_inertial_driver
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+4.10.0 (2026-10-01)
+-------------------
 * Updates submodules
   -Fix Septentrio port baudrate configuration
   -Remove C-style file extensions for Lyrical and Rolling

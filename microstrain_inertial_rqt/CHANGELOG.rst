@@ -2,8 +2,8 @@
 Changelog for package microstrain_inertial_rqt
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+4.10.0 (2026-10-01)
+-------------------
 * Migrates tests_require to extras_require in setup.py for Lyrical and Rolling support 
 
 4.9.0 (2026-05-21)
