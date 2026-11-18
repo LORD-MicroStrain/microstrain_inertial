@@ -2,8 +2,8 @@
 Changelog for package microstrain_inertial_driver
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+4.10.1 (2026-11-18)
+-------------------
 * Updates submodules
   -Adds body frame velocity aiding configuration
   -Prevents negative timestamps
