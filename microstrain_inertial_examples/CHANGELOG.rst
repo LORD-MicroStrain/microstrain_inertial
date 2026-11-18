@@ -2,6 +2,9 @@
 Changelog for package microstrain_inertial_examples
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 4.10.0 (2026-10-01)
 -------------------
 

@@ -2,6 +2,14 @@
 Changelog for package microstrain_inertial_driver
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Updates submodules
+  -Adds body frame velocity aiding configuration
+  -Prevents negative timestamps
+  -Restores direct RTK mode configuration
+* Contributors: Aidan
+
 4.10.0 (2026-10-01)
 -------------------
 * Updates submodules
